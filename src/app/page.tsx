@@ -106,8 +106,10 @@ export default function Home() {
   const [compareSliderPos, setCompareSliderPos] = useState(50);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  const selectedFile = files.find(f => f.id === selectedFileId);
+
   useEffect(() => {
-    const selected = files.find(f => f.id === selectedFileId);
+    const selected = selectedFile;
     if (selected?.file) {
       const url = URL.createObjectURL(selected.file);
       setPreviewUrl(url);
@@ -1125,18 +1127,18 @@ export default function Home() {
                 </button>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Studio Inspector</h2>
-                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{files.find(f => f.id === selectedFileId)?.file.name}</p>
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{selectedFile?.file.name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-full">
                   <span className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em]">
-                    -{files.find(f => f.id === selectedFileId)?.savings}% REDUCTION
+                    -{selectedFile?.savings}% REDUCTION
                   </span>
                 </div>
                 <a
-                  href={files.find(f => f.id === selectedFileId)?.compressedUrl}
-                  download={`ZBM-${files.find(f => f.id === selectedFileId)?.file.name}`}
+                  href={selectedFile?.compressedUrl}
+                  download={`ZBM-${selectedFile?.file.name}`}
                   className="bg-slate-900 text-white px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl active:scale-95"
                 >
                   Download
@@ -1168,7 +1170,7 @@ export default function Home() {
                     style={{ clipPath: `inset(0 0 0 ${compareSliderPos}%)` }}
                   >
                     <img
-                      src={files.find(f => f.id === selectedFileId)?.compressedUrl}
+                      src={selectedFile?.compressedUrl}
                       alt="compressed"
                       className="w-full h-full object-contain"
                     />
@@ -1203,11 +1205,11 @@ export default function Home() {
               <div className="flex gap-16">
                 <div>
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Input Payload</span>
-                  <span className="text-lg font-black text-slate-900">{formatSize(files.find(f => f.id === selectedFileId)?.originalSize || 0)}</span>
+                  <span className="text-lg font-black text-slate-900">{formatSize(selectedFile?.originalSize || 0)}</span>
                 </div>
                 <div>
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Studio Output</span>
-                  <span className="text-lg font-black text-emerald-500">{formatSize(files.find(f => f.id === selectedFileId)?.compressedSize || 0)}</span>
+                  <span className="text-lg font-black text-emerald-500">{formatSize(selectedFile?.compressedSize || 0)}</span>
                 </div>
               </div>
               <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] opacity-60">100% Sovereign Architecture • Zero Data Leaks</p>
