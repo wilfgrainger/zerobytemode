@@ -11,8 +11,8 @@ Zero servers to hack. Zero plugins to update. Zero monthly hosting fees.
 - **Stripe/Snipcart:** Serverless Commerce
 
 ## Deploy
-This repository is configured for automatic deployment via GitLab Pages.
-Pushing to `main` triggers the `.gitlab-ci.yml` pipeline.
+This repository is configured for automatic deployment via **GitHub Actions** and **GitHub Pages**.
+Pushing to the `main` branch automatically triggers the `.github/workflows/deploy.yml` pipeline, which builds the Next.js static export and deploys the Cloudflare Worker API.
 
 ## Docs
 - `docs/ARCHITECTURE.md`
