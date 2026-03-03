@@ -124,7 +124,7 @@ const verifyStripeSignature = async (env, rawBody, signatureHeader, secret) => {
 const createSessionToken = async (env, email) => {
   const secret = env.JWT_SECRET || env.STRIPE_SECRET_KEY;
   if (!secret) throw new Error('Cannot create token: missing server secret');
-  
+
   const timestamp = Date.now();
   const payload = `${email}|${timestamp}`;
   const signature = await hmacHex(secret, payload);
@@ -144,22 +144,22 @@ const verifySessionToken = async (env, token) => {
     return { email: null, error: `Invalid token format (parts: ${parts.length})` };
   }
   const [email, timestamp, signature] = parts;
-  
+
   const secret = env.JWT_SECRET || env.STRIPE_SECRET_KEY;
   if (!secret) return { email: null, error: 'Server configuration error: missing secret' };
-  
+
   const expectedSignature = await hmacHex(secret, `${email}|${timestamp}`);
   if (signature !== expectedSignature) {
     console.error('verifySessionToken: signature mismatch');
     return { email: null, error: 'Invalid cryptographic signature' };
   }
-  
+
   // Expiration check (30 days)
   if (Date.now() - parseInt(timestamp, 10) > 30 * 24 * 60 * 60 * 1000) {
     console.error('verifySessionToken: token expired');
     return { email: null, error: 'Token has expired' };
   }
-  
+
   return { email, error: null };
 }
 
@@ -172,7 +172,7 @@ export default {
       'https://www.zerobytemode.com',
       'http://localhost:3000'
     ]
-    
+
     const corsHeaders = {
       'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -200,7 +200,7 @@ export default {
       try {
         const { email, siteUrl } = await request.json()
         if (!email) return json({ error: 'Missing email' }, 400)
-        
+
         const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
         if (!isValidEmail) return json({ error: 'Invalid email' }, 400)
 
@@ -223,7 +223,7 @@ export default {
 
         const token = crypto.randomUUID()
         const expiresAt = Date.now() + 15 * 60 * 1000
-        
+
         try {
           await env.DB.prepare('INSERT OR REPLACE INTO login_tokens (email, token, expires_at) VALUES (?, ?, ?)')
             .bind(email, token, expiresAt).run()
@@ -255,11 +255,11 @@ export default {
               `
             })
           })
-          
+
           if (!resendResponse.ok) {
             const errorData = await resendResponse.text();
             console.error('Resend Error:', errorData);
-            
+
             let userFriendlyError = 'Email delivery service failed';
             if (errorData.includes('not_verified') || errorData.includes('from_address')) {
               userFriendlyError = 'Email sender (EMAIL_FROM) is not verified in Resend.';
@@ -267,18 +267,18 @@ export default {
               userFriendlyError = 'Invalid Resend API Key.';
             }
 
-            return json({ 
+            return json({
               success: false,
-              error: userFriendlyError, 
+              error: userFriendlyError,
               detail: errorData,
               // DEBUG: Allow developer to see the link if email fails
               debugLink: email === 'wjgrainger@gmail.com' ? magicLink : null
             })
           }
-          
+
           return json({ success: true })
         }
-        
+
         return json({ success: true, debug: magicLink })
       } catch (err) {
         console.error('Magic Link Error:', err);
@@ -291,20 +291,20 @@ export default {
       try {
         const { email, message } = await request.json()
         if (!email || !message) return json({ error: 'Missing email or message' }, 400)
-        
+
         if (env.RESEND_API_KEY) {
           const resendResponse = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              from: 'ZeroByteMode Support <compress@zerobytemode.com>', 
+              from: 'ZeroByteMode Support <compress@zerobytemode.com>',
               to: ['contact-project+zerobytemode-zerobytemode-76853945-issue-@incoming.gitlab.com'],
               subject: `Support Request from ${email}`,
               text: `Message from user: ${email}\n\n${message}`,
               reply_to: email
             })
           })
-          
+
           if (!resendResponse.ok) {
             const errorData = await resendResponse.text();
             console.error('Support Resend Error:', errorData);
@@ -312,7 +312,7 @@ export default {
           }
           return json({ success: true })
         }
-        
+
         return json({ success: false, error: 'Email service unconfigured' }, 500)
       } catch (err) {
         console.error('Support endpoint error:', err);
@@ -333,14 +333,42 @@ export default {
 
       const isActive = await isActiveSubscriptionForEmail(env, row.email)
       const sessionToken = await createSessionToken(env, row.email)
-      return json({ 
-        success: true, 
-        email: row.email, 
+      return json({
+        success: true,
+        email: row.email,
 
         tier: isActive ? 'pro' : 'standard',
         isActive,
         sessionToken
       })
+    }
+
+    // Auth Path: Session Validation
+    if (url.pathname === '/auth/validate-session' && request.method === 'GET') {
+      try {
+        const authHeader = request.headers.get('Authorization') || request.headers.get('authorization')
+        if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
+          return json({ error: 'Unauthorized', detail: 'Missing or invalid Bearer token' }, 401)
+        }
+
+        const token = authHeader.split(/bearer /i)[1]?.trim()
+        const { email, error: verifyError } = await verifySessionToken(env, token)
+
+        if (verifyError || !email) {
+          return json({ valid: false, error: 'Unauthorized', detail: verifyError || 'Token verification failed' }, 401)
+        }
+
+        const isActive = await isActiveSubscriptionForEmail(env, email)
+
+        return json({
+          valid: true,
+          email,
+          isActive
+        })
+      } catch (err) {
+        console.error('Validate Session Error:', err);
+        return json({ error: 'Internal Server Error', detail: err.message }, 500)
+      }
     }
 
     // Stripe: Create Checkout Session
@@ -372,7 +400,7 @@ export default {
           console.error('Stripe Error:', session);
           return json({ error: 'Stripe session creation failed', detail: session.error }, 500)
         }
-        
+
         return json({ url: session.url })
       } catch (err) {
         return json({ error: 'Internal Server Error', detail: err.message }, 500)
@@ -398,9 +426,9 @@ export default {
 
           const isActive = await isActiveSubscriptionForEmail(env, email)
           const sessionToken = await createSessionToken(env, email)
-          return json({ 
-            success: true, 
-            email, 
+          return json({
+            success: true,
+            email,
             isActive,
             sessionToken
           })
@@ -416,26 +444,26 @@ export default {
       const rawBody = await request.text()
       const signature = request.headers.get('stripe-signature') || request.headers.get('Stripe-Signature')
       const secret = env.STRIPE_WEBHOOK_SECRET
-      
+
       const verified = await verifyStripeSignature(env, rawBody, signature, secret)
       if (!verified.ok) return text(verified.error || 'Invalid signature', 400)
 
       let event = JSON.parse(rawBody)
       const obj = event?.data?.object
-      
+
       // Handle both Subscription updates and initial Checkout completion
       if (event.type === 'checkout.session.completed' || event.type.startsWith('customer.subscription')) {
         const email = obj.customer_details?.email || obj.customer_email || obj.email
         const customerId = obj.customer
         const status = obj.status || obj.subscription_details?.status
         const isActive = status === 'active' || status === 'trialing' || event.type === 'checkout.session.completed'
-        
+
         if (email) {
           await setCachedSubscription(env.DB, email, customerId, isActive)
 
           // If we have a session token from when they started checkout (optional optimization)
           // For now, just ensure the cache is warm.
-          
+
           // Send confirmation email on initial checkout completion
           if (event.type === 'checkout.session.completed' && env.RESEND_API_KEY) {
             const fromEmail = env.EMAIL_FROM ? `ZeroByteMode <${env.EMAIL_FROM}>` : 'ZeroByteMode <hello@zerobytemode.com>';
@@ -469,17 +497,17 @@ export default {
           console.error('Portal: Missing or invalid Authorization header');
           return json({ error: 'Unauthorized', detail: 'Missing or invalid Bearer token' }, 401)
         }
-        
+
         const token = authHeader.split(/bearer /i)[1]?.trim()
         const { email, error: verifyError } = await verifySessionToken(env, token)
-        
+
         if (verifyError || !email) {
           console.error('Portal: Token verification failed:', verifyError);
           return json({ error: 'Unauthorized', detail: verifyError || 'Token verification failed' }, 401)
         }
 
         const { returnUrl } = await request.json()
-        
+
         let customerId = await getCustomerIdByEmail(env, email)
         if (!customerId) {
           // If the user hasn't made a purchase yet, they won't have a Stripe customer.
@@ -505,10 +533,10 @@ export default {
         const session = await res.json()
         if (!res.ok) {
           console.error('Stripe Portal Session Error:', session);
-          return json({ 
-            error: 'Stripe portal session creation failed', 
+          return json({
+            error: 'Stripe portal session creation failed',
             detail: session.error || 'Check if STRIPE_SECRET_KEY is set in worker secrets.',
-            stripeRaw: session 
+            stripeRaw: session
           }, 500)
         }
 

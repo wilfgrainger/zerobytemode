@@ -130,9 +130,34 @@ export default function Home() {
   useEffect(() => {
     // 0. Hydrate auth state from cookies (persists across refresh)
     const cookieEmail = getCookie('zbm_user_email');
-    const cookiePro = getCookie('zbm_pro_tier');
+    const sessionToken = getCookie('zbm_session_token');
+
     if (cookieEmail) setEmail(cookieEmail);
-    if (cookiePro === 'true') setIsPro(true);
+
+    // Verify session with server if token exists
+    if (sessionToken) {
+      const verifySession = async () => {
+        try {
+          const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
+          const response = await fetch(`${workerUrl}/auth/validate-session`, {
+            headers: { 'Authorization': `Bearer ${sessionToken}` }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.valid) {
+              setIsPro(data.isActive);
+              if (data.email) setEmail(data.email);
+            }
+          } else if (response.status === 401) {
+            // Token invalid or expired
+            setIsPro(false);
+          }
+        } catch (err) {
+          console.error("Session verification failed:", err);
+        }
+      };
+      verifySession();
+    }
 
     // 1. Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
@@ -285,9 +310,6 @@ export default function Home() {
           };
           autoLogin();
         }
-      }
-      if (getCookie("zbm_pro_tier") === "true") {
-        setIsPro(true);
       }
 
       const savedEmail = getCookie("zbm_user_email");
@@ -843,7 +865,7 @@ export default function Home() {
                         hapticsImpact(ImpactStyle.Light);
                         setProFormat(fmt === 'JPG' ? 'image/jpeg' : 'image/webp');
                       }}
-                      className={`flex-1 py-3 rounded-xl text-[11px] uppercase font-black tracking-widest border transition-all duration-300 
+                      className={`flex-1 py-3 rounded-xl text-[11px] uppercase font-black tracking-widest border transition-all duration-300
                         ${proFormat === (fmt === 'JPG' ? 'image/jpeg' : 'image/webp') ? 'bg-white text-slate-900 border-slate-200 shadow-sm z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-slate-200/50'}`}
                       disabled={!isPro}
                     >
