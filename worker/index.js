@@ -122,7 +122,9 @@ const verifyStripeSignature = async (env, rawBody, signatureHeader, secret) => {
 }
 
 const createSessionToken = async (env, email) => {
-  const secret = env.JWT_SECRET || env.STRIPE_SECRET_KEY || 'default-zbm-secret';
+  const secret = env.JWT_SECRET || env.STRIPE_SECRET_KEY;
+  if (!secret) throw new Error('Cannot create token: missing server secret');
+  
   const timestamp = Date.now();
   const payload = `${email}|${timestamp}`;
   const signature = await hmacHex(secret, payload);
@@ -143,7 +145,9 @@ const verifySessionToken = async (env, token) => {
   }
   const [email, timestamp, signature] = parts;
   
-  const secret = env.JWT_SECRET || env.STRIPE_SECRET_KEY || 'default-zbm-secret';
+  const secret = env.JWT_SECRET || env.STRIPE_SECRET_KEY;
+  if (!secret) return { email: null, error: 'Server configuration error: missing secret' };
+  
   const expectedSignature = await hmacHex(secret, `${email}|${timestamp}`);
   if (signature !== expectedSignature) {
     console.error('verifySessionToken: signature mismatch');

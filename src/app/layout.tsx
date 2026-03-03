@@ -76,6 +76,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.workers.dev https://www.google-analytics.com; worker-src 'self' blob:; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://buy.stripe.com;"
+        />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-5K3SJRJBPD"
           strategy="afterInteractive"
