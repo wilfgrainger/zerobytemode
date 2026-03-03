@@ -6,7 +6,7 @@ Zero servers to hack. Zero plugins to update. Zero monthly hosting fees.
 
 ## Stack
 - **GitHub Pro:** Source Control
-- **Netlify/Pages:** Hosting & CDN
+- **GitHub Pages:** Hosting & CDN
 - **HTML5/JS:** Immutable Frontend
 - **Stripe/Snipcart:** Serverless Commerce
 
