@@ -17,9 +17,8 @@ Optional (email sending via Resend):
 - `EMAIL_FROM` (must be a verified sender/domain in Resend; otherwise Resend will reject)
 
 ## D1 schema
-Run both:
-- `auth-schema.sql` (login tokens)
-- `schema.sql` (optional subscriptions table; not required for Stripe-only checking)
+Run the combined schema setup:
+- `wrangler d1 execute zerobytemode-db --file=worker/schema.sql` (Creates both login tokens and subscription caching tables)
 
 ## API contract (POST)
 - `{ "action": "send-magic-link", "email": "user@example.com" }`

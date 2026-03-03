@@ -11,14 +11,13 @@ function VerifyContent() {
   const [errorMessage, setError] = useState("");
 
   useEffect(() => {
-    const token = searchParams.get("token");
-    if (!token) {
-      setStatus("error");
-      setError("No login token found in URL.");
-      return;
-    }
-
     const verifyToken = async () => {
+      const token = searchParams.get("token");
+      if (!token) {
+        setStatus("error");
+        setError("No login token found in URL.");
+        return;
+      }
       try {
         const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
         const response = await fetch(`${workerUrl}/auth/verify?token=${token}`);
