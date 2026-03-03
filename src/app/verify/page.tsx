@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { WORKER_URL } from "@/src/lib/constants";
 
 function VerifyContent() {
   const router = useRouter();
@@ -19,8 +20,7 @@ function VerifyContent() {
         return;
       }
       try {
-        const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
-        const response = await fetch(`${workerUrl}/auth/verify?token=${token}`);
+        const response = await fetch(`${WORKER_URL}/auth/verify?token=${token}`);
 
         if (response.ok) {
           const data = await response.json();

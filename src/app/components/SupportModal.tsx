@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import Image from "next/image";
+import { WORKER_URL } from "@/src/lib/constants";
 
 interface SupportModalProps {
     showSupportModal: boolean;
@@ -28,8 +29,7 @@ export function SupportModal({
         setError(null);
 
         try {
-            const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
-            const response = await fetch(`${workerUrl}/support`, {
+            const response = await fetch(`${WORKER_URL}/support`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, message }),

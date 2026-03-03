@@ -7,6 +7,7 @@ import Image from "next/image";
 import { SignInModal } from "./components/SignInModal";
 import { UpgradeEmailModal } from "./components/UpgradeEmailModal";
 import { SupportModal } from "./components/SupportModal";
+import { WORKER_URL } from "@/src/lib/constants";
 
 interface ImageFile {
   id: string;
@@ -201,8 +202,7 @@ export default function Home() {
     const emailMaxAge = rememberMe ? "max-age=2592000" : "";
 
     try {
-      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
-      const response = await fetch(`${workerUrl}/auth/magic-link`, {
+      const response = await fetch(`${WORKER_URL}/auth/magic-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, siteUrl: window.location.origin, rememberMe }),
@@ -274,8 +274,7 @@ export default function Home() {
         if (sessionId) {
           const autoLogin = async () => {
             try {
-              const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
-              const response = await fetch(`${workerUrl}/stripe/verify-session?session_id=${sessionId}`);
+              const response = await fetch(`${WORKER_URL}/stripe/verify-session?session_id=${sessionId}`);
               if (response.ok) {
                 const data = await response.json();
                 if (data.sessionToken) {
@@ -426,8 +425,7 @@ export default function Home() {
     setShowUpgradeEmailModal(false); // Close the email collector if it was open
 
     try {
-      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
-      const response = await fetch(`${workerUrl}/stripe/create-checkout`, {
+      const response = await fetch(`${WORKER_URL}/stripe/create-checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: targetEmail }),
@@ -506,8 +504,7 @@ export default function Home() {
     }
 
     try {
-      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL || "https://zerobytemode-subscriptions.zerobytemode.workers.dev";
-      const response = await fetch(`${workerUrl}/stripe/create-portal-session`, {
+      const response = await fetch(`${WORKER_URL}/stripe/create-portal-session`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
