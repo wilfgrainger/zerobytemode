@@ -44,10 +44,7 @@ test.describe('ZeroByteMode Visual & Functional Review', () => {
     // Navigate with success param to trigger Pro mock
     await page.goto('/?success=true');
     
-    const fileChooserPromise = page.waitForEvent('filechooser');
     await page.click('text=Start Compressing');
-    const fileChooser = await fileChooserPromise;
-    
     // We can't easily simulate a multi-file drop in Playwright without more setup
     // but we can verify the UI elements are ready for it.
     await expect(page.locator('input[type="file"]')).toHaveAttribute('multiple', '');
