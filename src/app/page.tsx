@@ -430,7 +430,7 @@ export default function Home() {
     if (validImages.length === 0) return;
 
     const newImageFiles: ImageFile[] = validImages.map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).slice(2, 11),
       file,
       originalSize: file.size,
       isCompressing: false,
