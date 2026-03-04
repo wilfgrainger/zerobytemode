@@ -4,7 +4,12 @@ const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
   images: { unoptimized: true },
-  webpack: (config) => {
+  webpack: (config, { dev }) => {
+    // Disable persistent cache in production to avoid RealContentHashPlugin errors
+    if (!dev) {
+      config.cache = false;
+    }
+
     // Enable async WASM for @jsquash codec binaries
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
 

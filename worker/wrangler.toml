@@ -8,8 +8,8 @@ database_name = "zerobytemode-subscriptions"
 database_id = "fdfa1cb7-35b0-43a6-88ce-d903bce41ed7"
 
 [vars]
-BASE_URL = "https://zerobytemode.com"
-ALLOWED_ORIGIN = "https://zerobytemode.com"
+BASE_URL = "https://www.zerobytemode.com"
+ALLOWED_ORIGIN = "https://www.zerobytemode.com"
 ENVIRONMENT = "production"
 EMAIL_FROM = "compress@zerobytemode.com"
 STRIPE_PRICE_ID = "price_1SeN5uFJz3rreuQPzCFO5SUx"

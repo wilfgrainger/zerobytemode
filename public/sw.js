@@ -1,5 +1,5 @@
-const CACHE_STATIC_NAME = 'zerobytemode-static-v3';
-const CACHE_DYNAMIC_NAME = 'zerobytemode-dynamic-v2';
+const CACHE_STATIC_NAME = 'zerobytemode-static-v4';
+const CACHE_DYNAMIC_NAME = 'zerobytemode-dynamic-v3';
 
 const STATIC_ASSETS = [
   '/',

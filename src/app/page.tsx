@@ -110,7 +110,11 @@ export default function Home() {
   const [compareSliderPos, setCompareSliderPos] = useState(50);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const isIOS = typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+  }, []);
 
   const selectedFile = files.find(f => f.id === selectedFileId);
 
@@ -1161,6 +1165,90 @@ export default function Home() {
               </div>
               <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] opacity-60">100% Sovereign Architecture • Zero Data Leaks</p>
             </footer>
+          </div>
+        </div>
+      )}
+
+      {/* Support Modal */}
+      <SupportModal
+        showSupportModal={showSupportModal}
+        setShowSupportModal={setShowSupportModal}
+        userEmail={email}
+      />
+
+      {/* Sign In Modal */}
+      <SignInModal
+        showSignIn={showSignIn}
+        setShowSignIn={setShowSignIn}
+        email={email}
+        setEmail={setEmail}
+        isLoginLoading={isLoginLoading}
+        loginSent={loginSent}
+        setLoginSent={setLoginSent}
+        handleSignIn={handleSignIn}
+        rememberMe={rememberMe}
+        setRememberMe={setRememberMe}
+      />
+
+      {/* Pro Email Collector Modal */}
+      <UpgradeEmailModal
+        showUpgradeEmailModal={showUpgradeEmailModal}
+        setShowUpgradeEmailModal={setShowUpgradeEmailModal}
+        setEmail={setEmail}
+        handleGetPro={handleGetPro}
+      />
+
+      {/* Stripe Loading Overlay */}
+      {isStripeLoading && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-white/60 backdrop-blur-2xl animate-in fade-in duration-500">
+          <div className="flex flex-col items-center">
+            <div className="w-24 h-24 p-4 bg-white rounded-3xl shadow-2xl border border-slate-900/5 mb-8 relative">
+              <div className="absolute inset-0 border-4 border-violet-500/20 border-t-violet-500 rounded-3xl animate-spin" />
+              <Image src="/logo.svg" alt="Logo" width={64} height={64} className="w-full h-full relative z-10" />
+            </div>
+            <p className="text-xs font-black text-slate-900 uppercase tracking-[0.3em] animate-pulse">Initializing Secure Gateway</p>
+          </div>
+        </div>
+      )}
+
+      {/* iOS Install Instructions */}
+      {showIOSInstallInstructions && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="w-full max-w-sm glass-panel p-10 border border-white/10 relative shadow-2xl rounded-3xl bg-zinc-950 text-center">
+            <button
+              onClick={() => setShowIOSInstallInstructions(false)}
+              aria-label="Close instructions"
+              className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+
+            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+            </div>
+
+            <h2 className="text-2xl font-bold mb-4 tracking-tight text-white">Install on iPhone</h2>
+            <div className="space-y-6 text-left mb-10">
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">1</div>
+                <p className="text-zinc-300 text-sm leading-relaxed">Tap the <span className="text-white font-bold">Share icon</span> in the bottom toolbar of Safari.</p>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">2</div>
+                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">&quot;Add to Home Screen&quot;</span>.</p>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">3</div>
+                <p className="text-zinc-300 text-sm leading-relaxed">Tap <span className="text-white font-bold">Add</span> in the top right corner.</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowIOSInstallInstructions(false)}
+              className="w-full h-12 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors"
+            >
+              Got it
+            </button>
           </div>
         </div>
       )}
