@@ -102,6 +102,12 @@ const deleteCookie = (name: string) => {
     document.cookie = `${name}=; ${baseOptions}; domain=zerobytemode.com; Secure`;
   }
 };
+
+// Helper to detect iOS
+const checkIsIOS = () => {
+  return typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+};
+
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<ImageFile[]>([]);
@@ -122,12 +128,6 @@ export default function Home() {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [compareSliderPos, setCompareSliderPos] = useState(50);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  const [isIOS, setIsIOS] = useState(false);
-
-  useEffect(() => {
-    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
-  }, []);
 
   const selectedFile = files.find(f => f.id === selectedFileId);
 
@@ -208,7 +208,7 @@ export default function Home() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
 
     // Show install button for iOS users if not standalone
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isIOS = checkIsIOS();
     if (isIOS && !isStandalone) {
       setShowInstallBtn(true);
     }
@@ -220,7 +220,7 @@ export default function Home() {
   }, []);
 
   const handleInstallClick = async () => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isIOS = checkIsIOS();
 
     if (isIOS) {
       // iPhone doesn't support native prompt, show instructions
@@ -342,7 +342,7 @@ export default function Home() {
           autoLogin();
         }
       }
-      
+
       const savedEmail = getCookie("zbm_user_email");
       if (savedEmail) setEmail(savedEmail);
     }
@@ -615,7 +615,7 @@ export default function Home() {
               INSTALL
             </button>
           )}
-          
+
           <div className="flex items-center gap-4">
             {isPro && (
               <div id="pro-status-badge" className="hidden lg:flex items-center gap-2.5 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full shadow-sm">
@@ -623,7 +623,7 @@ export default function Home() {
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">STUDIO PRO</span>
               </div>
             )}
-            
+
             {email ? (
               <>
                 {isPro ? (
@@ -819,7 +819,7 @@ export default function Home() {
                         hapticsImpact(ImpactStyle.Light);
                         setProFormat(fmt === 'JPG' ? 'image/jpeg' : 'image/webp');
                       }}
-                      className={`flex-1 py-3 rounded-xl text-[11px] uppercase font-black tracking-widest border transition-all duration-300 
+                      className={`flex-1 py-3 rounded-xl text-[11px] uppercase font-black tracking-widest border transition-all duration-300
                         ${proFormat === (fmt === 'JPG' ? 'image/jpeg' : 'image/webp') ? 'bg-white text-slate-900 border-slate-200 shadow-sm z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-slate-200/50'}`}
                       disabled={!isPro}
                     >
