@@ -79,11 +79,14 @@ const getCookie = (name: string): string | null => {
 };
 
 const setCookie = (name: string, value: string, options: string) => {
-  document.cookie = `${name}=${encodeURIComponent(value)}; ${options}`;
+  // Ensure cookies are shared across apex and www subdomains
+  const domain = window.location.hostname.includes('zerobytemode.com') ? "; domain=.zerobytemode.com" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; ${options}${domain}`;
 };
 
 const deleteCookie = (name: string) => {
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+  const domain = window.location.hostname.includes('zerobytemode.com') ? "; domain=.zerobytemode.com" : "";
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${domain}`;
 };
 
 export default function Home() {
