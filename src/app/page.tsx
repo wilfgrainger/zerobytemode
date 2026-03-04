@@ -539,7 +539,7 @@ export default function Home() {
       <div className="absolute bottom-[-10%] left-[10%] w-[70%] h-[60%] bg-violet-600/15 blur-[160px] rounded-full pointer-events-none animate-float opacity-70" />
 
       {/* Header */}
-      <header className="w-full max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0 relative z-10">
+      <header className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 relative z-10">
         <div className="flex items-center gap-4 md:gap-5 group cursor-pointer w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 md:w-20 md:h-20 p-2 bg-slate-900/5 border border-slate-900/10 rounded-2xl transition-all duration-500 group-hover:bg-slate-900/10 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0 shadow-sm">
@@ -557,7 +557,7 @@ export default function Home() {
             </button>
           )}
         </div>
-        <nav className="flex items-center gap-5 md:gap-8 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0">
+        <nav className="flex flex-wrap items-center gap-4 sm:gap-5 md:gap-8 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0">
           {showInstallBtn && (
             <button
               onClick={handleInstallClick}
@@ -595,19 +595,19 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-6">
+            <div className="flex items-center justify-center gap-4 sm:gap-6 w-full">
               <button
                 onClick={() => {
                   hapticsImpact(ImpactStyle.Light);
                   setShowSignIn(true);
                 }}
-                className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest"
+                className="text-[11px] sm:text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest"
               >
                 Sign In
               </button>
               <button
                 onClick={() => handleGetPro()}
-                className="text-sm font-black bg-slate-900 text-white px-6 py-3 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-lg hover:shadow-slate-900/20 uppercase tracking-widest"
+                className="text-[11px] sm:text-sm font-black bg-slate-900 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-lg hover:shadow-slate-900/20 uppercase tracking-widest"
               >
                 Upgrade to Pro
               </button>
@@ -708,10 +708,10 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
             <span className="text-[10px] font-black tracking-[0.2em] uppercase">Sovereign Local-First Engine</span>
           </div>
-          <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-slate-900 mb-6 md:mb-8 relative leading-[0.85]">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter text-slate-900 mb-6 md:mb-8 relative leading-[0.9] sm:leading-[0.85] break-words hyphens-auto">
             Professional<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-orange-500 to-violet-500 animate-gradient-x relative inline-block">Image Compressor.</span>
           </h1>
-          <p className="text-lg md:text-2xl text-slate-500 font-bold max-w-3xl mx-auto tracking-tight leading-relaxed px-4 opacity-90">
+          <p className="text-base sm:text-lg md:text-2xl text-slate-500 font-bold max-w-3xl mx-auto tracking-tight leading-relaxed px-4 opacity-90">
             Compress and optimize images directly in your browser with professional WASM engines. 100% private. 0% server uploads.
           </p>
         </div>
@@ -1029,22 +1029,24 @@ export default function Home() {
                 <p className="text-lg md:text-xl text-slate-500 font-bold max-w-2xl mx-auto tracking-tight">Unlock professional WASM engines and secure batch processing for high-volume workflows.</p>
               </div>
 
-              <div className="relative overflow-hidden rounded-[32px] border border-slate-900/10 bg-white shadow-2xl">
-                <div className="grid grid-cols-3 border-b border-slate-900/5 bg-slate-50/50">
-                  <div className="p-8 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Capability</div>
-                  <div className="p-8 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Standard</div>
-                  <div className="p-8 text-center text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] bg-orange-500/5">Studio Pro</div>
-                </div>
-                {BENEFITS.map((row, i) => (
-                  <div key={i} className="grid grid-cols-3 border-b border-slate-900/5 last:border-0 hover:bg-slate-50/50 transition-colors group">
-                    <div className="p-8 text-left text-base font-bold text-slate-900 flex items-center gap-4">
-                      <span className="text-xl grayscale group-hover:grayscale-0 transition-all">{row.icon}</span>
-                      {row.f}
-                    </div>
-                    <div className="p-8 text-center text-sm font-bold text-slate-500">{row.s}</div>
-                    <div className="p-8 text-center text-sm font-black text-slate-900 bg-orange-500/[0.02]">{row.p}</div>
+              <div className="relative overflow-x-auto custom-scrollbar rounded-[32px] border border-slate-900/10 bg-white shadow-2xl mx-4 md:mx-0">
+                <div className="min-w-[600px] w-full">
+                  <div className="grid grid-cols-3 border-b border-slate-900/5 bg-slate-50/50">
+                    <div className="p-8 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Capability</div>
+                    <div className="p-8 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Standard</div>
+                    <div className="p-8 text-center text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] bg-orange-500/5">Studio Pro</div>
                   </div>
-                ))}
+                  {BENEFITS.map((row, i) => (
+                    <div key={i} className="grid grid-cols-3 border-b border-slate-900/5 last:border-0 hover:bg-slate-50/50 transition-colors group">
+                      <div className="p-8 text-left text-base font-bold text-slate-900 flex items-center gap-4">
+                        <span className="text-xl grayscale group-hover:grayscale-0 transition-all flex-shrink-0">{row.icon}</span>
+                        <span>{row.f}</span>
+                      </div>
+                      <div className="p-8 text-center text-sm font-bold text-slate-500 flex items-center justify-center">{row.s}</div>
+                      <div className="p-8 text-center text-sm font-black text-slate-900 bg-orange-500/[0.02] flex items-center justify-center">{row.p}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
           )}
@@ -1115,7 +1117,7 @@ export default function Home() {
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-10 bg-white/95 backdrop-blur-3xl animate-in zoom-in-95 duration-500">
           <div className="w-full h-full max-w-6xl flex flex-col relative">
             <header className="flex items-center justify-between mb-10">
-              <div className="flex items-center gap-6">
+              <div className="flex items-center justify-center gap-4 sm:gap-6 w-full">
                 <button
                   onClick={() => setSelectedFileId(null)}
                   className="p-3 bg-slate-100 hover:bg-slate-200 border border-slate-900/5 rounded-2xl text-slate-900 transition-all shadow-sm"
