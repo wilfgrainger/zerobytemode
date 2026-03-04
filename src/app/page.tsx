@@ -812,6 +812,7 @@ export default function Home() {
                   ].map((eng) => (
                     <button
                       key={eng.id}
+                      aria-pressed={proEngine === eng.id}
                       onClick={() => {
                         if (!isPro && eng.isProOnly) {
                           handleGetPro();
@@ -841,6 +842,7 @@ export default function Home() {
                   {['JPG', 'WEBP'].map((fmt) => (
                     <button
                       key={fmt}
+                      aria-pressed={proFormat === (fmt === 'JPG' ? 'image/jpeg' : 'image/webp')}
                       onClick={() => {
                         hapticsImpact(ImpactStyle.Light);
                         setProFormat(fmt === 'JPG' ? 'image/jpeg' : 'image/webp');
@@ -860,6 +862,7 @@ export default function Home() {
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Archive</span>
                 <div className="flex p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
                   <button
+                    aria-pressed={encryptionEnabled}
                     onClick={() => {
                       hapticsImpact(ImpactStyle.Medium);
                       setEncryptionEnabled(!encryptionEnabled);
@@ -971,6 +974,8 @@ export default function Home() {
                                 href={file.compressedUrl}
                                 download={`ZBM-${file.file.name}`}
                                 onClick={(e) => e.stopPropagation()}
+                                aria-label={`Download compressed ${file.file.name}`}
+                                title={`Download compressed ${file.file.name}`}
                                 className="p-3.5 bg-white border border-slate-900/5 hover:border-slate-900/10 text-slate-400 hover:text-slate-900 rounded-xl transition-all shadow-sm hover:shadow-md"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
