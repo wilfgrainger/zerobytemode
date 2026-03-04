@@ -118,7 +118,7 @@ export default function Home() {
     } else {
       setPreviewUrl(null);
     }
-  }, [selectedFileId, files]);
+  }, [selectedFile]); // Only recreate preview URL when the actual file changes, not on every files array update (e.g. log progress)
 
   // Cleanup object URLs when a file is removed or component unmounts
   useEffect(() => {
