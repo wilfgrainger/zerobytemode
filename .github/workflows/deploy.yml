@@ -5,23 +5,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  # Build and deploy frontend to GitHub Pages
+  # Build and deploy frontend to Cloudflare
   build-and-deploy-frontend:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,17 +30,12 @@ jobs:
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_51SalTfFJz3rreuQPYg1I1vbhdFscoNnCZHMyxVofYFc46lYADpPqENyhGDgAXF6ChirD1BPoKkjTDNWMG7WLbsBu00a6IxDuwM"
         run: npm run build
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy Frontend to Cloudflare
+        uses: cloudflare/wrangler-action@v3
         with:
-          path: ./out
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
 
   # Deploy Cloudflare Worker API
   deploy-worker:
