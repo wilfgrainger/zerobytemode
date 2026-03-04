@@ -4,7 +4,4 @@ compatibility_date = "2024-03-04"
 [assets]
 directory = "out"
 
-routes = [
-  { pattern = "zerobytemode.com", custom_domain = true },
-  { pattern = "www.zerobytemode.com", custom_domain = true }
-]
+
