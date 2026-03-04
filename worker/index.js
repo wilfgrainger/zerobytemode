@@ -3,6 +3,7 @@ export const rateLimitMap = new Map()
 export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000 // 15 minutes
 const RATE_LIMIT_MAX_MAGIC_LINK = 3 // max magic link requests per email per window
 const RATE_LIMIT_MAX_TOKEN_VERIFY = 10 // max token verify attempts per IP per window
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 
 export const checkRateLimit = (key, maxAttempts) => {
   const now = Date.now()
@@ -155,7 +156,7 @@ const verifySessionToken = async (env, token) => {
   }
 
   // Expiration check (30 days)
-  if (Date.now() - parseInt(timestamp, 10) > 30 * 24 * 60 * 60 * 1000) {
+  if (Date.now() - parseInt(timestamp, 10) > THIRTY_DAYS_MS) {
     console.error('verifySessionToken: token expired');
     return { email: null, error: 'Token has expired' };
   }
