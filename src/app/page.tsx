@@ -664,6 +664,7 @@ export default function Home() {
           <div className="w-full max-w-sm glass-panel p-10 border border-white/10 relative shadow-2xl rounded-3xl bg-zinc-950 text-center">
             <button
               onClick={() => setShowIOSInstallInstructions(false)}
+              aria-label="Close instructions"
               className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -681,7 +682,7 @@ export default function Home() {
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">2</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">"Add to Home Screen"</span>.</p>
+                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">&quot;Add to Home Screen&quot;</span>.</p>
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">3</div>
@@ -737,6 +738,7 @@ export default function Home() {
               id="image-upload"
               name="image-upload"
               type="file"
+                aria-label="Upload images"
               ref={fileInputRef}
               onChange={handleFileInput}
               className="hidden"
@@ -788,6 +790,7 @@ export default function Home() {
                   id="quality-range"
                   name="quality-range"
                   type="range"
+                  aria-label="Compression quality"
                   min="0.1"
                   max="1.0"
                   step="0.05"
@@ -1118,6 +1121,7 @@ export default function Home() {
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => setSelectedFileId(null)}
+                  aria-label="Close inspector"
                   className="p-3 bg-slate-100 hover:bg-slate-200 border border-slate-900/5 rounded-2xl text-slate-900 transition-all shadow-sm"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
@@ -1181,6 +1185,7 @@ export default function Home() {
                     id="compare-slider"
                     name="compare-slider"
                     type="range"
+                    aria-label="Compare original and compressed"
                     min="0"
                     max="100"
                     value={compareSliderPos}
