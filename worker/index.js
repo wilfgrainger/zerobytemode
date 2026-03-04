@@ -89,6 +89,17 @@ const isActiveSubscriptionForEmail = async (env, email) => {
 const hex = (buf) =>
   [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
 
+// Constant-time string comparison to prevent timing attacks on signatures
+const timingSafeEqual = (a, b) => {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 const hmacHex = async (secret, message) => {
   const key = await crypto.subtle.importKey(
     'raw',
@@ -117,7 +128,7 @@ const verifyStripeSignature = async (env, rawBody, signatureHeader, secret) => {
 
   const expected = await hmacHex(secret, `${timestamp}.${rawBody}`)
   const presented = v1Parts.map((p) => p.slice(3))
-  const match = presented.some((v) => v === expected)
+  const match = presented.some((v) => timingSafeEqual(v, expected))
   return match ? { ok: true } : { ok: false, error: 'Signature mismatch' }
 }
 
@@ -149,7 +160,7 @@ const verifySessionToken = async (env, token) => {
   if (!secret) return { email: null, error: 'Server configuration error: missing secret' };
 
   const expectedSignature = await hmacHex(secret, `${email}|${timestamp}`);
-  if (signature !== expectedSignature) {
+  if (!timingSafeEqual(signature, expectedSignature)) {
     console.error('verifySessionToken: signature mismatch');
     return { email: null, error: 'Invalid cryptographic signature' };
   }
