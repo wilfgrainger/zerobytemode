@@ -11,6 +11,7 @@
     "worker:dev": "wrangler dev -c worker/wrangler.toml",
     "worker:deploy": "wrangler deploy -c worker/wrangler.toml",
     "worker:tail": "wrangler tail -c worker/wrangler.toml",
+    "frontend:deploy": "wrangler deploy",
     "test:codecs": "playwright test tests/engines.spec.ts"
   },
   "dependencies": {
