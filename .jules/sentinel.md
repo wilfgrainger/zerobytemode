@@ -1,4 +1,0 @@
-## 2024-05-18 - [Prevent Timing Attacks on HMAC Signatures]
-**Vulnerability:** Timing attack vulnerability in `verifySessionToken` and `verifyStripeSignature` where HMAC signatures were being compared using standard string equality (`===`).
-**Learning:** Cloudflare Workers running V8 don't provide a direct `crypto.timingSafeEqual` or `crypto.subtle.timingSafeEqual` equivalent for string comparisons out-of-the-box in the default global scope. This makes standard equality checks on cryptographic tokens susceptible to timing attacks, where an attacker can determine the correct signature by measuring the time it takes for the comparison to fail.
-**Prevention:** Implement and use a manual, constant-time string comparison function (e.g., `timingSafeEqual`) using bitwise XOR operations (`a.charCodeAt(i) ^ b.charCodeAt(i)`) to ensure that the comparison takes the same amount of time regardless of when a mismatch occurs.
