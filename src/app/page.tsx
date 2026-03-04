@@ -131,11 +131,44 @@ export default function Home() {
 
 
   useEffect(() => {
-    // 0. Hydrate auth state from cookies (persists across refresh)
+    // 0. Hydrate auth state from cookies and validate session securely
     const cookieEmail = getCookie('zbm_user_email');
-    const cookiePro = getCookie('zbm_pro_tier');
+    const cookieToken = getCookie('zbm_session_token');
+
     if (cookieEmail) setEmail(cookieEmail);
-    if (cookiePro === 'true') setIsPro(true);
+
+    const validateSession = async () => {
+      if (!cookieToken) {
+        // STRICT: If no token, they are NOT Pro, regardless of other cookies
+        setIsPro(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${WORKER_URL}/auth/validate-session`, {
+          headers: { "Authorization": `Bearer ${cookieToken}` }
+        });
+        const data = await response.json();
+        if (response.ok && data.valid) {
+          setIsPro(data.isActive);
+          if (data.email) setEmail(data.email);
+          // Sync the pro cookie for UI hints, but the truth is from the token
+          setCookie("zbm_pro_tier", data.isActive ? "true" : "false", "path=/; max-age=2592000; SameSite=Lax");
+        } else {
+          // Token invalid or expired
+          setIsPro(false);
+          deleteCookie("zbm_session_token");
+          deleteCookie("zbm_pro_tier");
+        }
+      } catch (err) {
+        console.error("Session validation failed:", err);
+        // On network error, we don't grant Pro unless we already knew they were
+        // but strictly we should probably fail safe.
+        setIsPro(false);
+      }
+    };
+
+    validateSession();
 
     // 1. Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
@@ -287,10 +320,7 @@ export default function Home() {
           autoLogin();
         }
       }
-      if (getCookie("zbm_pro_tier") === "true") {
-        setIsPro(true);
-      }
-
+      
       const savedEmail = getCookie("zbm_user_email");
       if (savedEmail) setEmail(savedEmail);
     }
@@ -568,7 +598,7 @@ export default function Home() {
           )}
           {isPro ? (
             <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2.5 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full shadow-sm">
+              <div id="pro-status-badge" className="hidden sm:flex items-center gap-2.5 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse" />
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">STUDIO PRO</span>
               </div>
@@ -750,7 +780,7 @@ export default function Home() {
             <div className={`transition-all duration-500 transform ${isDragging ? 'scale-95 opacity-0 blur-sm' : 'scale-100 opacity-100 blur-0'}`}>
               <div className="w-28 h-28 bg-slate-100 rounded-[32px] flex items-center justify-center mx-auto mb-12 border border-slate-900/5 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700 shadow-sm relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[32px]" />
-                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
               </div>
               <h3 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-6">Deploy Images.</h3>
               <p className="text-lg md:text-xl text-slate-500 font-bold tracking-tight opacity-80">Drop files here or click to browse</p>
@@ -991,7 +1021,7 @@ export default function Home() {
                       <div className="w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 to-black rounded-2xl p-4 md:p-6 overflow-hidden flex flex-col shadow-[inset_0_2px_15px_rgba(0,0,0,0.5)] border border-slate-900/10">
                         <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/5">
                           <div className="flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5" /><line x1="12" x2="19" y2="19" /></svg>
                             <span className="text-[11px] font-mono font-black text-zinc-500 tracking-[0.2em] uppercase">Engine Telemetry</span>
                           </div>
                           {file.status === 'processing' && (

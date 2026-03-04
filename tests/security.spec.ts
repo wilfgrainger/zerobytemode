@@ -19,7 +19,7 @@ test.describe('Security: Authorization Bypass Check', () => {
     await page.reload();
 
     // 4. Verify that the Pro badge is NOT visible
-    const proBadge = page.locator('text=STUDIO PRO');
+    const proBadge = page.locator('#pro-status-badge');
     await expect(proBadge).not.toBeVisible();
 
     // 5. Verify that Pro-only features are still locked/show upgrade prompts
