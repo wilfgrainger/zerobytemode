@@ -80,20 +80,28 @@ const getCookie = (name: string): string | null => {
 
 const setCookie = (name: string, value: string, options: string) => {
   // Ensure cookies are shared across apex and www subdomains
-  const domain = window.location.hostname.includes('zerobytemode.com') ? "; domain=.zerobytemode.com" : "";
-  document.cookie = `${name}=${encodeURIComponent(value)}; ${options}${domain}`;
+  const isProd = window.location.hostname.includes('zerobytemode.com');
+  const domain = isProd ? "; domain=.zerobytemode.com" : "";
+  const secure = isProd ? "; Secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; ${options}${domain}${secure}`;
 };
 
 const deleteCookie = (name: string) => {
-  // 1. Try deleting without a domain (for the current specific subdomain like www)
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
-  
-  // 2. Try deleting with the apex domain explicitly
-  if (window.location.hostname.includes('zerobytemode.com')) {
-    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; domain=.zerobytemode.com`;
+  const isProd = window.location.hostname.includes('zerobytemode.com');
+  const baseOptions = "path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+
+  // 1. Try deleting without a domain
+  document.cookie = `${name}=; ${baseOptions}`;
+  document.cookie = `${name}=; ${baseOptions}; Secure`;
+
+  // 2. Try deleting with the apex domain explicitly if on production
+  if (isProd) {
+    document.cookie = `${name}=; ${baseOptions}; domain=.zerobytemode.com`;
+    document.cookie = `${name}=; ${baseOptions}; domain=.zerobytemode.com; Secure`;
+    document.cookie = `${name}=; ${baseOptions}; domain=zerobytemode.com`;
+    document.cookie = `${name}=; ${baseOptions}; domain=zerobytemode.com; Secure`;
   }
 };
-
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<ImageFile[]>([]);
@@ -526,8 +534,8 @@ export default function Home() {
     link.click();
   };
 
-  const handleLogout = () => {
-    hapticsImpact(ImpactStyle.Medium);
+  const handleLogout = async () => {
+    await hapticsImpact(ImpactStyle.Medium);
     deleteCookie("zbm_pro_tier");
     deleteCookie("zbm_user_email");
     deleteCookie("zbm_session_token");
@@ -607,45 +615,60 @@ export default function Home() {
               INSTALL
             </button>
           )}
-          {isPro ? (
-            <div className="flex items-center gap-4">
+          
+          <div className="flex items-center gap-4">
+            {isPro && (
               <div id="pro-status-badge" className="hidden lg:flex items-center gap-2.5 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse" />
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">STUDIO PRO</span>
               </div>
-              <button
-                onClick={handleManageSubscription}
-                className="text-xs font-black text-slate-900 hover:text-blue-600 transition-colors uppercase tracking-widest px-4 py-2 bg-slate-100 rounded-xl"
-              >
-                Billing
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                title="Sign Out"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => {
-                  hapticsImpact(ImpactStyle.Light);
-                  setShowSignIn(true);
-                }}
-                className="text-xs font-black text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest px-4"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => handleGetPro()}
-                className="text-[10px] font-black bg-slate-900 text-white px-6 py-3.5 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
-              >
-                Go Pro
-              </button>
-            </div>
-          )}
+            )}
+            
+            {email ? (
+              <>
+                {isPro ? (
+                  <button
+                    onClick={handleManageSubscription}
+                    className="text-xs font-black text-slate-900 hover:text-blue-600 transition-colors uppercase tracking-widest px-4 py-2 bg-slate-100 rounded-xl"
+                  >
+                    Billing
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGetPro()}
+                    className="text-[10px] font-black bg-slate-900 text-white px-6 py-3.5 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
+                  >
+                    Go Pro
+                  </button>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                  title="Sign Out"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    hapticsImpact(ImpactStyle.Light);
+                    setShowSignIn(true);
+                  }}
+                  className="text-xs font-black text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest px-4"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => handleGetPro()}
+                  className="text-[10px] font-black bg-slate-900 text-white px-6 py-3.5 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
+                >
+                  Go Pro
+                </button>
+              </>
+            )}
+          </div>
         </nav>
       </header>
 
