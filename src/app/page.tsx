@@ -85,8 +85,13 @@ const setCookie = (name: string, value: string, options: string) => {
 };
 
 const deleteCookie = (name: string) => {
-  const domain = window.location.hostname.includes('zerobytemode.com') ? "; domain=.zerobytemode.com" : "";
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${domain}`;
+  // 1. Try deleting without a domain (for the current specific subdomain like www)
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+  
+  // 2. Try deleting with the apex domain explicitly
+  if (window.location.hostname.includes('zerobytemode.com')) {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; domain=.zerobytemode.com`;
+  }
 };
 
 export default function Home() {
