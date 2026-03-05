@@ -233,8 +233,18 @@ export default {
           return json({ error: 'Failed to generate secure token', detail: dbErr.message }, 500)
         }
 
-        const baseUrl = siteUrl || env.BASE_URL || 'http://localhost:3000'
-        const magicLink = `${baseUrl.replace(/\/$/, '')}/verify?token=${encodeURIComponent(token)}`
+        const isValidUrl = (urlStr) => {
+          try {
+            const u = new URL(urlStr)
+            return allowedOrigins.includes(u.origin)
+          } catch (e) {
+            return false
+          }
+        }
+
+        const validSiteUrl = siteUrl && isValidUrl(siteUrl) ? siteUrl : (env.BASE_URL || 'http://localhost:3000')
+        const baseUrl = validSiteUrl.replace(/\/$/, '')
+        const magicLink = `${baseUrl}/verify?token=${encodeURIComponent(token)}`
 
         // Send via Resend
         const emailFrom = env.EMAIL_FROM ? `ZeroByteMode <${env.EMAIL_FROM}>` : 'ZeroByteMode <compress@zerobytemode.com>';
@@ -509,6 +519,17 @@ export default {
 
         const { returnUrl } = await request.json()
 
+        const isValidUrl = (urlStr) => {
+          try {
+            const u = new URL(urlStr)
+            return allowedOrigins.includes(u.origin)
+          } catch (e) {
+            return false
+          }
+        }
+
+        const validReturnUrl = returnUrl && isValidUrl(returnUrl) ? returnUrl : (env.BASE_URL || 'https://www.zerobytemode.com')
+
         let customerId = await getCustomerIdByEmail(env, email)
         if (!customerId) {
           // If the user hasn't made a purchase yet, they won't have a Stripe customer.
@@ -527,7 +548,7 @@ export default {
           },
           body: new URLSearchParams({
             customer: customerId,
-            return_url: returnUrl || env.BASE_URL || 'https://www.zerobytemode.com'
+            return_url: validReturnUrl
           })
         })
 
