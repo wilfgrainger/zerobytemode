@@ -87,7 +87,7 @@ export function SupportModal({
                             </div>
                             <h2 className="text-xl font-bold mb-2 tracking-tight text-slate-900">Message Sent!</h2>
                             <p className="text-slate-500 text-sm leading-relaxed">
-                                We've received your request and will get back to you shortly.
+                                We&apos;ve received your request and will get back to you shortly.
                             </p>
                         </div>
                     ) : (

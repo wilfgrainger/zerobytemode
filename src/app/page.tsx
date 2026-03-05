@@ -100,6 +100,7 @@ export default function Home() {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginSent, setLoginSent] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
   const [showIOSInstallInstructions, setShowIOSInstallInstructions] = useState(false);
@@ -150,9 +151,11 @@ export default function Home() {
     });
 
     // 3. Detect if already installed / standalone
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
 
     // Show install button for iOS users if not standalone
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     if (isIOS && !isStandalone) {
       setShowInstallBtn(true);
@@ -165,6 +168,7 @@ export default function Home() {
   }, []);
 
   const handleInstallClick = async () => {
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
     if (isIOS) {
@@ -681,7 +685,7 @@ export default function Home() {
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">2</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">"Add to Home Screen"</span>.</p>
+                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">&quot;Add to Home Screen&quot;</span>.</p>
               </div>
               <div className="flex items-start gap-4">
                 <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">3</div>
@@ -815,6 +819,7 @@ export default function Home() {
                           return;
                         }
                         hapticsImpact(ImpactStyle.Light);
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                         setProEngine(eng.id as any);
                       }}
                       className={`py-3 px-1 rounded-xl text-[10px] uppercase font-black tracking-widest border transition-all duration-300 relative group

@@ -116,11 +116,11 @@ self.onmessage = async (e: MessageEvent) => {
         const avifEncodeModule = await import("@jsquash/avif/encode");
         // init() accepts one argument: moduleOptionOverrides which accepts locateFile
         await avifEncodeModule.init({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           locateFile: (path: string) => {
             // Redirect to the single-threaded wasm binary (no _mt suffix)
             return path.replace("avif_enc_mt.wasm", "avif_enc.wasm");
           },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any);
         postLog("Decoding uncompressed canvas stream...");
         const imageData = await getImageData(file);
