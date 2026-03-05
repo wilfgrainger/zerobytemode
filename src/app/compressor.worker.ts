@@ -4,7 +4,9 @@
 async function getImageData(file: File | Blob): Promise<ImageData> {
   const bitmap = await createImageBitmap(file);
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const ctx = canvas.getContext("2d");
+  // Using willReadFrequently: true forces a software canvas, avoiding
+  // expensive GPU-to-CPU memory readbacks when calling getImageData() frequently
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("Could not get canvas context");
   ctx.drawImage(bitmap, 0, 0);
   const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
@@ -116,12 +118,11 @@ self.onmessage = async (e: MessageEvent) => {
         const avifEncodeModule = await import("@jsquash/avif/encode");
         // init() accepts one argument: moduleOptionOverrides which accepts locateFile
         await avifEncodeModule.init({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           locateFile: (path: string) => {
             // Redirect to the single-threaded wasm binary (no _mt suffix)
             return path.replace("avif_enc_mt.wasm", "avif_enc.wasm");
           },
-        } as any);
+        } as unknown as Parameters<typeof avifEncodeModule.init>[0]);
         postLog("Decoding uncompressed canvas stream...");
         const imageData = await getImageData(file);
         postLog(`Executing structural encoding (Speed: 6, Quality: ${Math.round(q * 100)}%)...`);
