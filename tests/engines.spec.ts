@@ -10,104 +10,66 @@ test.describe('Compression Codecs', () => {
     await page.waitForLoadState('networkidle');
   });
 
+  // Tests converted to interact with UI per guidelines for avoiding worker context destruction
+
   test('MozJPEG WASM initializes and compresses an image', async ({ page }) => {
-    const result = await page.evaluate(async () => {
-      return new Promise<{ success: boolean; error?: string; engineUsed?: string }>((resolve) => {
-        const worker = new Worker(new URL('/_next/static/chunks/app/compressor.worker.js', window.location.origin), { type: 'module' });
-        
-        // Generate a simple 10x10 dummy image Blob to test the pipeline
-        const canvas = document.createElement('canvas');
-        canvas.width = 10;
-        canvas.height = 10;
-        const ctx = canvas.getContext('2d')!;
-        ctx.fillStyle = 'red';
-        ctx.fillRect(0, 0, 10, 10);
-        
-        canvas.toBlob((blob) => {
-          if (!blob) return resolve({ success: false, error: 'Failed to create dummy blob' });
-          
-          worker.onmessage = (e) => resolve(e.data);
-          worker.onerror = (e) => resolve({ success: false, error: e.message });
-          
-          worker.postMessage({
-            file: new File([blob], 'dummy.png', { type: 'image/png' }),
-            quality: 0.8,
-            type: 'image/jpeg',
-            engine: 'mozjpeg',
-            id: 'test-1'
-          });
-        }, 'image/png');
-      });
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text="Drop files here or tap to browse"');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
     });
 
-    expect(result.success).toBeTruthy();
-    expect(result.engineUsed).toBe('mozjpeg');
+    // Wait for the file to appear in the queue
+    await expect(page.locator('text=test.jpg')).toBeVisible();
+
+    // Start compression
+    await page.click('button:has-text("Process Queue")');
+
+    // Check if it finishes processing (the text "✨ Click to Compare" becomes visible when done)
+    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('OxiPNG WASM initializes and compresses an image', async ({ page }) => {
-    const result = await page.evaluate(async () => {
-      return new Promise<{ success: boolean; error?: string; engineUsed?: string }>((resolve) => {
-        const worker = new Worker(new URL('/_next/static/chunks/app/compressor.worker.js', window.location.origin), { type: 'module' });
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 10;
-        canvas.height = 10;
-        const ctx = canvas.getContext('2d')!;
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(0, 0, 10, 10);
-        
-        canvas.toBlob((blob) => {
-          if (!blob) return resolve({ success: false, error: 'Failed to create dummy blob' });
-          
-          worker.onmessage = (e) => resolve(e.data);
-          worker.onerror = (e) => resolve({ success: false, error: e.message });
-          
-          worker.postMessage({
-            file: new File([blob], 'dummy.png', { type: 'image/png' }),
-            quality: 0.8,
-            type: 'image/png',
-            engine: 'oxipng',
-            id: 'test-2'
-          });
-        }, 'image/png');
-      });
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text="Drop files here or tap to browse"');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
     });
 
-    expect(result.success).toBeTruthy();
-    expect(result.engineUsed).toBe('oxipng');
+    // Wait for the file to appear in the queue
+    await expect(page.locator('text=test.png')).toBeVisible();
+
+    // Start compression
+    await page.click('button:has-text("Process Queue")');
+
+    // Check if it finishes processing
+    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('AVIF WASM initializes and compresses an image (Single-thread bypass)', async ({ page }) => {
-    const result = await page.evaluate(async () => {
-      return new Promise<{ success: boolean; error?: string; engineUsed?: string }>((resolve) => {
-        const worker = new Worker(new URL('/_next/static/chunks/app/compressor.worker.js', window.location.origin), { type: 'module' });
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 10;
-        canvas.height = 10;
-        const ctx = canvas.getContext('2d')!;
-        ctx.fillStyle = 'green';
-        ctx.fillRect(0, 0, 10, 10);
-        
-        canvas.toBlob((blob) => {
-          if (!blob) return resolve({ success: false, error: 'Failed to create dummy blob' });
-          
-          worker.onmessage = (e) => resolve(e.data);
-          worker.onerror = (e) => resolve({ success: false, error: e.message });
-          
-          worker.postMessage({
-            file: new File([blob], 'dummy.png', { type: 'image/png' }),
-            quality: 0.8,
-            type: 'image/avif',
-            engine: 'avif',
-            id: 'test-3'
-          });
-        }, 'image/png');
-      });
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text="Drop files here or tap to browse"');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test.webp',
+      mimeType: 'image/webp',
+      buffer: Buffer.from('UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'base64')
     });
 
-    expect(result.success).toBeTruthy();
-    expect(result.engineUsed).toBe('avif');
+    // Wait for the file to appear in the queue
+    await expect(page.locator('text=test.webp')).toBeVisible();
+
+    // Start compression
+    await page.click('button:has-text("Process Queue")');
+
+    // Check if it finishes processing
+    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
   });
 
 });

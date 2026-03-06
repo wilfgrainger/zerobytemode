@@ -591,10 +591,10 @@ export default function Home() {
       <div className="absolute bottom-[-10%] left-[10%] w-[70%] h-[60%] bg-violet-600/15 blur-[160px] rounded-full pointer-events-none animate-float opacity-70" />
 
       {/* Header - App Style Top Bar */}
-      <header className="w-full max-w-7xl mx-auto px-6 md:px-10 py-10 md:py-14 flex items-center justify-between relative z-[100]">
-        <div className="flex items-center gap-5 md:gap-6 group cursor-pointer">
+      <header className="w-full max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-14 flex items-center justify-between relative z-[100]">
+        <div className="flex items-center gap-3 md:gap-6 group cursor-pointer">
           <div className="flex items-center gap-5">
-            <div className="w-20 h-20 md:w-24 md:h-24 p-2.5 bg-slate-900/5 border border-slate-900/10 rounded-[28px] transition-all duration-500 group-hover:bg-slate-900/10 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0 shadow-sm relative overflow-hidden">
+            <div className="w-14 h-14 md:w-24 md:h-24 p-2 bg-slate-900/5 border border-slate-900/10 rounded-[28px] transition-all duration-500 group-hover:bg-slate-900/10 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0 shadow-sm relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               <Image src="/logo.svg" alt="ZeroByteMode Logo" width={80} height={80} className="w-full h-full relative z-10" />
             </div>
@@ -725,7 +725,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[40px]" />
                 <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               </div>
-              <h3 className="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">Deploy Assets.</h3>
+              <h3 className="text-3xl md:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">Deploy Assets.</h3>
               <p className="text-lg md:text-2xl text-slate-500 font-bold tracking-tight opacity-80">Drop files here or tap to browse</p>
 
               <div className="mt-20 flex items-center justify-center gap-12">
@@ -873,7 +873,7 @@ export default function Home() {
                   {files.some(f => f.status === 'staged') && (
                     <button
                       onClick={handleStartCompression}
-                      className="flex-1 md:flex-none text-[11px] font-black px-8 py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] bg-slate-900 text-white shadow-xl hover:bg-slate-800 hover:scale-[1.02] active:scale-95"
+                      className="flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] bg-slate-900 text-white shadow-xl hover:bg-slate-800 hover:scale-[1.02] active:scale-95"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                       Process Queue
@@ -882,7 +882,7 @@ export default function Home() {
                   {isPro && files.some(f => f.status === 'done') && (
                     <button
                       onClick={handleDownloadAll}
-                      className={`flex-1 md:flex-none text-[11px] font-black px-8 py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border ${encryptionEnabled ? "bg-emerald-500 text-slate-900 border-emerald-400 shadow-xl shadow-emerald-500/20 hover:bg-emerald-400" : "bg-white text-slate-900 border-slate-200 shadow-lg hover:bg-slate-50"}`}
+                      className={`flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border ${encryptionEnabled ? "bg-emerald-500 text-slate-900 border-emerald-400 shadow-xl shadow-emerald-500/20 hover:bg-emerald-400" : "bg-white text-slate-900 border-slate-200 shadow-lg hover:bg-slate-50"}`}
                     >
                       {encryptionEnabled ? "Secure Export" : "Download Archive"}
                     </button>
@@ -1011,19 +1011,19 @@ export default function Home() {
               </div>
 
               <div className="relative overflow-hidden rounded-[32px] border border-slate-900/10 bg-white shadow-2xl">
-                <div className="grid grid-cols-3 border-b border-slate-900/5 bg-slate-50/50">
-                  <div className="p-8 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Capability</div>
-                  <div className="p-8 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Standard</div>
-                  <div className="p-8 text-center text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] bg-orange-500/5">Studio Pro</div>
+                <div className="flex border-b border-slate-900/5 bg-slate-50/50">
+                  <div className="flex-1 p-4 md:p-8 text-left text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Capability</div>
+                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Standard</div>
+                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] bg-orange-500/5">Studio Pro</div>
                 </div>
                 {BENEFITS.map((row, i) => (
-                  <div key={i} className="grid grid-cols-3 border-b border-slate-900/5 last:border-0 hover:bg-slate-50/50 transition-colors group">
-                    <div className="p-8 text-left text-base font-bold text-slate-900 flex items-center gap-4">
+                  <div key={i} className="flex border-b border-slate-900/5 last:border-0 hover:bg-slate-50/50 transition-colors group">
+                    <div className="flex-1 p-4 md:p-8 text-left text-xs md:text-base font-bold text-slate-900 flex items-center gap-4">
                       <span className="text-xl grayscale group-hover:grayscale-0 transition-all">{row.icon}</span>
                       {row.f}
                     </div>
-                    <div className="p-8 text-center text-sm font-bold text-slate-500">{row.s}</div>
-                    <div className="p-8 text-center text-sm font-black text-slate-900 bg-orange-500/[0.02]">{row.p}</div>
+                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-bold text-slate-500">{row.s}</div>
+                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-black text-slate-900 bg-orange-500/[0.02]">{row.p}</div>
                   </div>
                 ))}
               </div>
