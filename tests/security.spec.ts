@@ -32,8 +32,8 @@ test.describe('Security: Authorization Bypass Check', () => {
     // Since it's locked by the overlay when !isPro, we check for the overlay
     const proOnlyOverlay = page.locator('text=STUDIO PRO ONLY').first();
     // We might need to hover to see it if it's hidden by default, but the presence in DOM (even hidden) is enough if logic is correct
-    // Or just check that isPro state remains false by seeing the "Upgrade to Pro" button
-    const upgradeButton = page.locator('text=Upgrade to Pro');
+    // Or just check that isPro state remains false by seeing the "Go Pro" button
+    const upgradeButton = page.locator('text=Go Pro').first();
     await expect(upgradeButton).toBeVisible();
   });
 });
