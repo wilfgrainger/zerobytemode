@@ -906,8 +906,16 @@ export default function Home() {
                 {files.map((file) => (
                   <div key={file.id} className="flex flex-col gap-3">
                     <div
+                      role={file.status === 'done' ? 'button' : undefined}
+                      tabIndex={file.status === 'done' ? 0 : undefined}
+                      onKeyDown={(e) => {
+                        if (file.status === 'done' && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault();
+                          setSelectedFileId(file.id);
+                        }
+                      }}
                       onClick={() => file.status === 'done' && setSelectedFileId(file.id)}
-                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-900/5 group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-slate-900/10 hover:bg-white hover:shadow-lg' : ''}`}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-900/5 group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-slate-900/10 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50' : ''}`}
                     >
                       <div className="flex items-center gap-6 flex-1 min-w-0 w-full">
                         <div className="w-16 h-16 rounded-[18px] bg-white border border-slate-900/5 flex items-center justify-center overflow-hidden flex-shrink-0 relative shadow-sm group/thumb">

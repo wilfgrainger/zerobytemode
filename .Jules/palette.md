@@ -3,3 +3,7 @@
 ## 2024-03-06 - Inaccessible Div-based Dropzones
 **Learning:** Div elements frequently serve as custom file dropzones (triggering a hidden `<input type="file">` via `onClick`). However, a raw `<div>` with `onClick` cannot be focused and won't respond to keyboard inputs, breaking accessibility.
 **Action:** When a generic HTML element acts as a button, strictly assign `role="button"`, `tabIndex={0}`, keyboard event handlers (`onKeyDown` for `Enter` and `Space`), and explicit `focus-visible` styles to ensure full keyboard operability.
+
+## 2024-05-18 - Conditional Accessibility for Dynamic List Items
+**Learning:** List items in the application (like queue items) sometimes start as non-interactive elements (e.g., during "processing") and become interactive buttons only after an async state change (e.g., "done"). Without conditional a11y attributes, keyboard-only users cannot access the newly interactive elements, rendering key features (like the Studio Inspector) inaccessible to them.
+**Action:** Always conditionally apply `role="button"`, `tabIndex={0}`, keyboard event handlers (`onKeyDown`), and `focus-visible` styles based on the item's interactive state rather than assuming static element roles.
