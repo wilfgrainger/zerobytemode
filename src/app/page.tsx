@@ -612,7 +612,7 @@ export default function Home() {
               onClick={handleInstallClick}
               className="flex items-center gap-2.5 px-5 py-2.5 bg-blue-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
               INSTALL
             </button>
           )}
@@ -648,7 +648,7 @@ export default function Home() {
                   title="Sign Out"
                   aria-label="Sign Out"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
+                  <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
                 </button>
               </>
             ) : (
@@ -735,7 +735,7 @@ export default function Home() {
             <div className={`transition-all duration-500 transform ${isDragging ? 'scale-95 opacity-0 blur-sm' : 'scale-100 opacity-100 blur-0'}`}>
               <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-50 rounded-[40px] flex items-center justify-center mx-auto mb-14 border border-slate-900/5 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700 shadow-sm relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[40px]" />
-                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               </div>
               <h3 className="text-3xl md:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">Deploy Assets.</h3>
               <p className="text-lg md:text-2xl text-slate-500 font-bold tracking-tight opacity-80">Drop files here or tap to browse</p>
@@ -812,7 +812,7 @@ export default function Home() {
                       {eng.label}
                       {!isPro && eng.isProOnly && (
                         <div className="absolute top-0 right-0 -mt-1.5 -mr-1.5 bg-orange-500 text-white rounded-full p-1 shadow-lg flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                         </div>
                       )}
                     </button>
@@ -856,7 +856,7 @@ export default function Home() {
                       ${encryptionEnabled ? 'bg-slate-900 text-white border-slate-900 shadow-xl z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-slate-200/50'}`}
                     disabled={!isPro}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={encryptionEnabled ? "text-emerald-400" : ""}><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={encryptionEnabled ? "text-emerald-400" : ""}><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                     {encryptionEnabled ? "SECURE ZIP" : "STANDARD ZIP"}
                   </button>
                 </div>
@@ -887,7 +887,7 @@ export default function Home() {
                       onClick={handleStartCompression}
                       className="flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] bg-slate-900 text-white shadow-xl hover:bg-slate-800 hover:scale-[1.02] active:scale-95"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                       Process Queue
                     </button>
                   )}
@@ -963,7 +963,7 @@ export default function Home() {
                                 title={`Download compressed ${file.file.name}`}
                                 className="p-3.5 bg-white border border-slate-900/5 hover:border-slate-900/10 text-slate-400 hover:text-slate-900 rounded-xl transition-all shadow-sm hover:shadow-md"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
                               </a>
                             </div>
                           </>
@@ -976,7 +976,7 @@ export default function Home() {
                       <div className="w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 to-black rounded-2xl p-4 md:p-6 overflow-hidden flex flex-col shadow-[inset_0_2px_15px_rgba(0,0,0,0.5)] border border-slate-900/10">
                         <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/5">
                           <div className="flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5" /><line x1="12" x2="19" y2="19" /></svg>
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5" /><line x1="12" x2="19" y2="19" /></svg>
                             <span className="text-[11px] font-mono font-black text-zinc-500 tracking-[0.2em] uppercase">Engine Telemetry</span>
                           </div>
                           {file.status === 'processing' && (
@@ -1114,7 +1114,7 @@ export default function Home() {
                   aria-label="Close inspector"
                   className="p-3 bg-slate-100 hover:bg-slate-200 border border-slate-900/5 rounded-2xl text-slate-900 transition-all shadow-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                  <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Studio Inspector</h2>
@@ -1187,7 +1187,7 @@ export default function Home() {
                     style={{ left: `calc(${compareSliderPos}% - 0.5px)` }}
                   >
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-100">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 8-4 4-4 4M6 8l-4 4 4 4" /></svg>
+                      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 8-4 4-4 4M6 8l-4 4 4 4" /></svg>
                     </div>
                   </div>
                 </div>
@@ -1261,11 +1261,11 @@ export default function Home() {
               aria-label="Close instructions"
               className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
 
             <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
             </div>
 
             <h2 className="text-2xl font-bold mb-4 tracking-tight text-white">Install on iPhone</h2>
