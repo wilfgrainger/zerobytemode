@@ -695,6 +695,17 @@ export default function Home() {
         <div className="w-full max-w-5xl mb-40 md:mb-64 relative px-2 md:px-0">
           <div className="absolute -inset-10 bg-gradient-to-r from-violet-500/10 via-pink-500/10 to-orange-500/10 rounded-[60px] blur-[100px] opacity-50 pointer-events-none" />
           <div
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                  fileInputRef.current.click();
+                }
+              }
+            }}
             onClick={() => {
               if (fileInputRef.current) {
                 fileInputRef.current.value = ""; // Reset input so same file can be selected again
@@ -704,7 +715,7 @@ export default function Home() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`w-full p-12 md:p-40 rounded-[48px] border-2 border-dashed relative overflow-hidden group cursor-pointer transition-all duration-700
+            className={`w-full p-12 md:p-40 rounded-[48px] border-2 border-dashed relative overflow-hidden group cursor-pointer transition-all duration-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/50
               ${isDragging ? 'border-violet-500 bg-violet-500/5 scale-[1.02] shadow-2xl' : 'border-slate-900/10 bg-white/90 backdrop-blur-xl hover:border-slate-900/20 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] hover:bg-white'}
               z-20`}
           >
