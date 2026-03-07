@@ -336,6 +336,11 @@ export default {
       const token = url.searchParams.get('token')
       if (!token) return json({ error: 'Missing token' }, 400)
 
+      const ip = request.headers.get('cf-connecting-ip') || 'unknown'
+      if (!checkRateLimit(`verify:${ip}`, RATE_LIMIT_MAX_TOKEN_VERIFY)) {
+        return json({ error: 'Too many requests', detail: 'Rate limit exceeded. Please try again later.' }, 429)
+      }
+
       const row = await env.DB.prepare('SELECT email FROM login_tokens WHERE token = ? AND expires_at > ?')
         .bind(token, Date.now()).first()
 
