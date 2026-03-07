@@ -108,6 +108,15 @@ const checkIsIOS = () => {
   return typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 };
 
+// Pure utility moved outside component to prevent recreation on re-renders
+const formatSize = (bytes: number) => {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<ImageFile[]>([]);
@@ -448,14 +457,6 @@ export default function Home() {
       // Pro tier: append to queue
       setFiles(prev => [...prev, ...newImageFiles]);
     }
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const [isStripeLoading, setIsStripeLoading] = useState(false);
