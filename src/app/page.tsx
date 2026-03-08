@@ -740,7 +740,7 @@ export default function Home() {
               <h3 className="text-3xl md:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">Deploy Assets.</h3>
               <p className="text-lg md:text-2xl text-slate-500 font-bold tracking-tight opacity-80">Drop files here or tap to browse</p>
 
-              <div className="mt-20 flex items-center justify-center gap-12">
+              <div className="mt-20 flex flex-wrap items-center justify-center gap-4 md:gap-12">
                 {['JPG', 'PNG', 'WEBP', 'AVIF'].map((fmt) => (
                   <div key={fmt} className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-slate-200" />
