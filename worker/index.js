@@ -2,6 +2,7 @@
 export const rateLimitMap = new Map()
 export const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000 // 15 minutes
 const RATE_LIMIT_MAX_MAGIC_LINK = 3 // max magic link requests per email per window
+const RATE_LIMIT_MAX_MAGIC_LINK_IP = 10 // max magic link requests per IP per window
 const RATE_LIMIT_MAX_TOKEN_VERIFY = 10 // max token verify attempts per IP per window
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 
@@ -226,8 +227,14 @@ export default {
         if (!isValidEmail) return json({ error: 'Invalid email' }, 400)
 
         // Rate limit magic link requests
-        if (email !== 'wjgrainger@gmail.com' && !checkRateLimit(`magic:${email}`, RATE_LIMIT_MAX_MAGIC_LINK)) {
-          return json({ error: 'Too many requests', detail: 'Rate limit exceeded. Please try again in 15 minutes.' }, 429)
+        const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown-ip'
+        if (email !== 'wjgrainger@gmail.com') {
+          if (!checkRateLimit(`magic-ip:${clientIp}`, RATE_LIMIT_MAX_MAGIC_LINK_IP)) {
+            return json({ error: 'Too many requests', detail: 'Rate limit exceeded for this IP. Please try again later.' }, 429)
+          }
+          if (!checkRateLimit(`magic:${email}`, RATE_LIMIT_MAX_MAGIC_LINK)) {
+            return json({ error: 'Too many requests', detail: 'Rate limit exceeded. Please try again in 15 minutes.' }, 429)
+          }
         }
 
         let isActive = false;
