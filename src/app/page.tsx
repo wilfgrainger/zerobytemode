@@ -765,7 +765,7 @@ export default function Home() {
           <div className="relative">
             <div className="w-full grid grid-cols-1 min-[600px]:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 p-10 md:p-12 rounded-[32px] bg-white border border-slate-900/10 shadow-2xl transition-all duration-700">
               <div className="text-left relative">
-                {!isPro && <div className="absolute inset-0 z-10 bg-transparent cursor-pointer group" onClick={() => handleGetPro()}><div className="hidden group-hover:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
                 <div className="flex justify-between items-center mb-2 transition-all duration-300">
                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Quality</span>
                   <span className="text-[11px] font-black text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-900/5">{Math.round(proQuality * 100)}%</span>
@@ -821,7 +821,7 @@ export default function Home() {
               </div>
 
               <div className="text-left relative">
-                {!isPro && <div className="absolute inset-0 z-10 bg-transparent cursor-pointer group" onClick={() => handleGetPro()}><div className="hidden group-hover:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Format</span>
                 <div className="flex p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
                   {['JPG', 'WEBP'].map((fmt) => (
@@ -843,7 +843,7 @@ export default function Home() {
               </div>
 
               <div className="text-left relative">
-                {!isPro && <div className="absolute inset-0 z-10 bg-transparent cursor-pointer group" onClick={() => handleGetPro()}><div className="hidden group-hover:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Archive</span>
                 <div className="flex p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
                   <button
@@ -906,8 +906,16 @@ export default function Home() {
                 {files.map((file) => (
                   <div key={file.id} className="flex flex-col gap-3">
                     <div
+                      role={file.status === 'done' ? 'button' : undefined}
+                      tabIndex={file.status === 'done' ? 0 : undefined}
+                      onKeyDown={(e) => {
+                        if (file.status === 'done' && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault();
+                          setSelectedFileId(file.id);
+                        }
+                      }}
                       onClick={() => file.status === 'done' && setSelectedFileId(file.id)}
-                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-900/5 group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-slate-900/10 hover:bg-white hover:shadow-lg' : ''}`}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-900/5 group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-slate-900/10 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50' : ''}`}
                     >
                       <div className="flex items-center gap-6 flex-1 min-w-0 w-full">
                         <div className="w-16 h-16 rounded-[18px] bg-white border border-slate-900/5 flex items-center justify-center overflow-hidden flex-shrink-0 relative shadow-sm group/thumb">
