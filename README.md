@@ -28,3 +28,15 @@ Create `.env.local` (see `.env.example`) and set:
 Stripe links can be configured via:
 - `NEXT_PUBLIC_STRIPE_CHECKOUT_URL`
 - `NEXT_PUBLIC_STRIPE_PORTAL_URL`
+
+## Android Readiness Path
+To support both desktop browser and future Android app delivery, this project is already in a good place because it uses client-side processing and static export (`next export` via `output: "export"`).
+
+Recommended path:
+1. Keep web app quality high (PWA manifest + responsive UI).
+2. Add Capacitor CLI + Android platform when ready: `npm i -D @capacitor/cli && npm i @capacitor/android` then `npx cap init` and `npx cap add android`.
+3. Use the Next static output (`out/`) as the Capacitor web asset directory.
+4. Validate camera/filesystem permissions for Android-specific UX if native integrations are needed.
+5. Keep auth and billing endpoints on HTTPS (current Worker approach is compatible).
+
+This gives one core codebase for desktop web + Android shell with minimal divergence.
