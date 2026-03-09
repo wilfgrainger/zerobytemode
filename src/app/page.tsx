@@ -141,15 +141,15 @@ export default function Home() {
   const selectedFile = files.find(f => f.id === selectedFileId);
 
   useEffect(() => {
-    const selected = selectedFile;
-    if (selected?.file) {
-      const url = URL.createObjectURL(selected.file);
+    const file = selectedFile?.file;
+    if (file) {
+      const url = URL.createObjectURL(file);
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     } else {
       setPreviewUrl(null);
     }
-  }, [selectedFile]); // Only recreate preview URL when the actual file changes, not on every files array update (e.g. log progress)
+  }, [selectedFile?.file]); // Only recreate preview URL when the actual file changes, not on every files array update (e.g. log progress)
 
   // Cleanup object URLs when a file is removed or component unmounts
   useEffect(() => {
