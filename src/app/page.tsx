@@ -105,7 +105,7 @@ const deleteCookie = (name: string) => {
 
 // Helper to detect iOS
 const checkIsIOS = () => {
-  return typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  return typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
 };
 
 // Pure utility moved outside component to prevent recreation on re-renders
@@ -131,7 +131,7 @@ export default function Home() {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginSent, setLoginSent] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [showInstallBtn, setShowInstallBtn] = useState(false);
   const [showIOSInstallInstructions, setShowIOSInstallInstructions] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
@@ -158,6 +158,7 @@ export default function Home() {
         if (f.compressedUrl) URL.revokeObjectURL(f.compressedUrl);
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only on unmount for full cleanup, handled individually on removal if implemented
 
 
@@ -214,7 +215,7 @@ export default function Home() {
     });
 
     // 3. Detect if already installed / standalone
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || ("standalone" in window.navigator && (window.navigator as { standalone?: boolean }).standalone);
 
     // Show install button for iOS users if not standalone
     const isIOS = checkIsIOS();
@@ -250,7 +251,7 @@ export default function Home() {
   const hapticsImpact = async (style = ImpactStyle.Medium) => {
     try {
       await Haptics.impact({ style });
-    } catch (e) {
+    } catch {
       // Ignore if not on mobile/capacitor
     }
   };
@@ -362,42 +363,34 @@ export default function Home() {
   }, []);
 
   // Effect to process the next file in the queue (only 'pending' files)
-  useEffect(() => {
-    const nextFile = files.find(f => f.status === 'pending');
-    if (nextFile && !isProcessingQueue) {
-      processFile(nextFile);
-    }
-  }, [files, isProcessingQueue]);
-
   const handleStartCompression = () => {
     hapticsImpact(ImpactStyle.Heavy);
     setFiles(prev => prev.map(f => f.status === 'staged' ? { ...f, status: 'pending' } : f));
   };
 
-  const processFile = (imageFile: ImageFile) => {
-    if (!workerRef.current) return;
+  useEffect(() => {
+    const nextFile = files.find(f => f.status === 'pending');
+    if (nextFile && !isProcessingQueue && workerRef.current) {
+      setIsProcessingQueue(true);
+      setFiles(prev => prev.map(f => f.id === nextFile.id ? { ...f, status: 'processing', isCompressing: true } : f));
 
-    setIsProcessingQueue(true);
-    setFiles(prev => prev.map(f => f.id === imageFile.id ? { ...f, status: 'processing', isCompressing: true } : f));
+      const quality = isPro ? proQuality : 0.65;
+      const type = isPro ? proFormat : (nextFile.file.type === 'image/png' ? 'image/webp' : 'image/jpeg');
 
-    const quality = isPro ? proQuality : 0.65;
-    // Free tier: intelligently use WebP for PNGs to preserve transparency and maximize savings, JPEG for others
-    const type = isPro ? proFormat : (imageFile.file.type === 'image/png' ? 'image/webp' : 'image/jpeg');
+      const engineToUse = (!isPro && (proEngine === 'mozjpeg' || proEngine === 'avif'))
+        ? 'autopilot'
+        : proEngine;
 
-    // Auto and oxipng are available on Free tier; mozjpeg and avif require Pro.
-    const engineToUse = (!isPro && (proEngine === 'mozjpeg' || proEngine === 'avif'))
-      ? 'autopilot'
-      : proEngine;
-
-    workerRef.current.postMessage({
-      file: imageFile.file,
-      quality,
-      type,
-      engine: engineToUse === 'autopilot' ? 'browser' : engineToUse,
-      autoPilot: engineToUse === 'autopilot',
-      id: imageFile.id
-    });
-  };
+      workerRef.current.postMessage({
+        file: nextFile.file,
+        quality,
+        type,
+        engine: engineToUse === 'autopilot' ? 'browser' : engineToUse,
+        autoPilot: engineToUse === 'autopilot',
+        id: nextFile.id
+      });
+    }
+  }, [files, isProcessingQueue, isPro, proQuality, proFormat, proEngine]);
 
   // Reset processing flag when a file finishes
   useEffect(() => {
@@ -804,7 +797,7 @@ export default function Home() {
                           return;
                         }
                         hapticsImpact(ImpactStyle.Light);
-                        setProEngine(eng.id as any);
+                        setProEngine(eng.id as 'browser' | 'mozjpeg' | 'oxipng' | 'avif' | 'autopilot');
                       }}
                       className={`py-3 px-1 rounded-xl text-[10px] uppercase font-black tracking-widest border transition-all duration-300 relative group
                         ${proEngine === eng.id ? 'bg-white text-slate-900 border-slate-200 shadow-sm z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-white/50'}`}

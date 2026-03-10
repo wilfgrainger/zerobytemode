@@ -1,0 +1,55 @@
+{
+  "api": {
+    "auth": {
+      "magic-link": {
+        "endpoint": "POST /auth/magic-link",
+        "payload": {
+          "email": "string",
+          "siteUrl": "string",
+          "rememberMe": "boolean"
+        },
+        "response": {
+          "success": "boolean",
+          "error": "string?",
+          "detail": "string?"
+        }
+      },
+      "validate-session": {
+        "endpoint": "GET /auth/validate-session",
+        "headers": {
+          "Authorization": "Bearer <token>"
+        },
+        "response": {
+          "valid": "boolean",
+          "isActive": "boolean",
+          "email": "string?"
+        }
+      }
+    },
+    "stripe": {
+      "create-checkout": {
+        "endpoint": "POST /stripe/create-checkout",
+        "payload": {
+          "email": "string"
+        },
+        "response": {
+          "url": "string",
+          "error": "string?"
+        }
+      },
+      "create-portal-session": {
+        "endpoint": "POST /stripe/create-portal-session",
+        "payload": {
+          "returnUrl": "string"
+        },
+        "headers": {
+          "Authorization": "Bearer <token>"
+        },
+        "response": {
+          "url": "string",
+          "error": "string?"
+        }
+      }
+    }
+  }
+}

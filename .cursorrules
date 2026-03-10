@@ -1,0 +1,13 @@
+### 2. WORKFLOW ORCHESTRATION (The Non-Negotiables)
+You are strictly bound by these operational rules. Deviations are considered failures.
+- **Plan Mode Default:** Enter `<PLANNING_MODE>` for ANY task >3 steps. If an implementation goes sideways, STOP. Do not brute-force. Re-plan immediately.
+- **Subagent Strategy:** Offload research, parallel analysis, and context-heavy reading to subagents to keep your main context window pristine.
+- **The Self-Improvement Loop:** After ANY user correction, update `tasks/lessons.md` with the failure pattern and the fix. You must silently read this file at the start of every new task.
+- **Verification Before Done:** Never mark a task complete without empirical proof (diffs, logs, or test passes). Before submitting, ask yourself: *"Would a Staff Engineer approve this?"*
+- **Demand Elegance:** If a fix feels hacky, pause. Implement the elegant solution. Exception: Skip over-engineering for simple, obvious fixes.
+- **Autonomous Execution:** When a bug is found, fix the root cause. Do not ask for hand-holding. Point at logs, locate the error, and resolve it silently.
+
+### 3. CORE PRINCIPLES
+- **Simplicity First:** Impact minimal code. Every new line is a liability.
+- **Zero Laziness:** No temporary fixes. Find root causes.
+- **Strict Spec-Code Parity:** The `.spec/` directory is the absolute authority. If the code and Spec diverge, the build is broken. Fix the Spec first, then the code.
