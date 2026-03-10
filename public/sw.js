@@ -1,5 +1,5 @@
-const CACHE_STATIC_NAME = 'zerobytemode-static-v3';
-const CACHE_DYNAMIC_NAME = 'zerobytemode-dynamic-v2';
+const CACHE_STATIC_NAME = 'zerobytemode-static-v4';
+const CACHE_DYNAMIC_NAME = 'zerobytemode-dynamic-v3';
 
 const STATIC_ASSETS = [
   '/',
@@ -48,40 +48,54 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Check if request is for a dynamically loaded Next.js chunk or asset
-  const isNextJsAsset = event.request.url.includes('/_next/static/') || event.request.url.includes('/_next/data/');
+  const url = new URL(event.request.url);
+  
+  // 1. Skip cross-origin requests (Google Analytics, Stripe, etc.)
+  const isInternal = url.origin === self.location.origin;
+  
+  // 2. Skip Cloudflare internal endpoints
+  const isCloudflare = url.pathname.startsWith('/cdn-cgi/');
+  
+  // 3. Identification of static assets we want to cache
+  const isNextJsAsset = url.pathname.includes('/_next/static/') || url.pathname.includes('/_next/data/');
   const isImage = event.request.destination === 'image';
+  const isFont = event.request.destination === 'font' || url.pathname.endsWith('.woff2') || url.pathname.endsWith('.woff');
 
-  // Cache-first strategy for static assets, network-first for others
+  // If it's Cloudflare internal or not something we want to manage, bypass SW
+  if (isCloudflare || (!isInternal && !isImage && !isFont && !isNextJsAsset)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response; // Return from cache if found
-        } else {
-          // If not in cache, go to network
-          return fetch(event.request)
-            .then((res) => {
-              // Cache dynamic requests
-              if (res.status === 200 && (isNextJsAsset || isImage || event.request.url.startsWith(self.location.origin))) {
-                return caches.open(CACHE_DYNAMIC_NAME)
-                  .then((cache) => {
-                    // Use clone as response can only be consumed once
-                    cache.put(event.request.url, res.clone());
-                    return res;
-                  });
-              }
-              return res; // Return response for other requests
-            })
-            .catch((err) => {
-              // Fallback for offline usage
-              if (event.request.mode === 'navigate') {
-                return caches.match('/index.html'); // Fallback to app shell for navigation
-              }
-              // Optionally return an offline page for other failed requests
-              // return caches.match('/offline.html');
-            });
+      .then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
+
+        return fetch(event.request)
+          .then((networkResponse) => {
+            // Cache successful dynamic requests for assets
+            if (networkResponse && networkResponse.status === 200 && (isInternal || isImage || isFont || isNextJsAsset)) {
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_DYNAMIC_NAME).then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+            }
+            return networkResponse;
+          })
+          .catch((err) => {
+            // Fallback for navigation
+            if (event.request.mode === 'navigate') {
+              return caches.match('/index.html');
+            }
+            // Return a safe error response
+            return new Response('Resource unavailable offline', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: new Headers({ 'Content-Type': 'text/plain' })
+            });
+          });
       })
   );
 });

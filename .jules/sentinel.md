@@ -1,0 +1,4 @@
+## 2024-05-24 - [HIGH] Email Bombing in Serverless Apps
+**Vulnerability:** The magic link endpoint rate limited requests *per email address* (e.g. 3 requests per email), but did not limit *per IP address*. An attacker could iterate through thousands of emails (`a@example.com`, `b@example.com`) and send thousands of magic links from the same IP without getting blocked, because they only send 1 email per address.
+**Learning:** In serverless endpoints, particularly those integrating with external APIs like Resend, it's crucial to implement IP-based rate limiting in addition to entity-based (email, user id) rate limiting to prevent abuse and API exhaustion. Cloudflare workers expose the client IP via the `cf-connecting-ip` header.
+**Prevention:** Always implement an IP-based rate limit for sensitive endpoints like authentication, magic links, or password resets. Use `request.headers.get('cf-connecting-ip')` to track client IPs.

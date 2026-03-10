@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -49,7 +50,13 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "ZeroByteMode",
   },
+};
+
+export const viewport: Viewport = {
   themeColor: "#f8fafc",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -100,18 +107,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground selection:bg-white/20`}
       >
-        <Script id="unregister-sw" strategy="beforeInteractive">
-          {`
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                  registration.unregister();
-                  console.log('[SW] Unregistered aggressive cached Service Worker.');
-                }
-              });
-            }
-          `}
-        </Script>
         {children}
       </body>
     </html>

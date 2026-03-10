@@ -24,14 +24,19 @@ function VerifyContent() {
 
         if (response.ok) {
           const data = await response.json();
+          const isProd = window.location.hostname.includes('zerobytemode.com');
+          const domain = isProd ? "; domain=.zerobytemode.com" : "";
+          const secure = isProd ? "; Secure" : "";
+          const options = `path=/; max-age=2592000; SameSite=Lax${domain}${secure}`;
+
           if (data.email) {
-            document.cookie = `zbm_user_email=${encodeURIComponent(data.email)}; path=/; max-age=2592000; SameSite=Lax`;
+            document.cookie = `zbm_user_email=${encodeURIComponent(data.email)}; ${options}`;
           }
           if (data.sessionToken) {
-            document.cookie = `zbm_session_token=${encodeURIComponent(data.sessionToken)}; path=/; max-age=2592000; SameSite=Lax`;
+            document.cookie = `zbm_session_token=${encodeURIComponent(data.sessionToken)}; ${options}`;
           }
           if (data.tier === "pro") {
-            document.cookie = "zbm_pro_tier=true; path=/; max-age=2592000; SameSite=Lax";
+            document.cookie = `zbm_pro_tier=true; ${options}`;
           }
           setStatus("success");
           setTimeout(() => router.push("/"), 2000);

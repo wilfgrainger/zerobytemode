@@ -1,0 +1,5 @@
+## 2024-03-01 - Widespread Missing ARIA Labels on Icon Buttons\n**Learning:** This app frequently relies on icon-only buttons (e.g., SVG close icons) for modal dialogs and inputs without visible labels. These elements lacked `aria-label` or `sr-only` descriptions, creating significant navigation barriers for screen reader users.\n**Action:** Whenever creating or updating modal components or custom controls (like ranges), explicitly enforce passing or assigning an `aria-label` or using a screen-reader-only label to maintain accessible interfaces across the app.
+
+## 2024-03-06 - Inaccessible Div-based Dropzones
+**Learning:** Div elements frequently serve as custom file dropzones (triggering a hidden `<input type="file">` via `onClick`). However, a raw `<div>` with `onClick` cannot be focused and won't respond to keyboard inputs, breaking accessibility.
+**Action:** When a generic HTML element acts as a button, strictly assign `role="button"`, `tabIndex={0}`, keyboard event handlers (`onKeyDown` for `Enter` and `Space`), and explicit `focus-visible` styles to ensure full keyboard operability.

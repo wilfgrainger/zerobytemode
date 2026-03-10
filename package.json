@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "playwright test && node tests/rate-limit.test.js",
+    "test": "playwright test && node tests/rate-limit.test.js && node tests/magic-link-rate-limit.test.js && node tests/magic-link-stripe-error.test.js && node tests/verify-rate-limit.test.js",
     "worker:dev": "wrangler dev -c worker/wrangler.toml",
     "worker:deploy": "wrangler deploy -c worker/wrangler.toml",
     "worker:tail": "wrangler tail -c worker/wrangler.toml",
+    "frontend:deploy": "wrangler deploy",
     "test:codecs": "playwright test tests/engines.spec.ts"
   },
   "dependencies": {
@@ -36,7 +37,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "gh-pages": "^6.3.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.68.1"

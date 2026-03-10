@@ -8,39 +8,66 @@ test.describe('Compression Codecs', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  // Since WASM Web Workers encounter execution context destruction on Next.js dev server chunk boundaries
-  // inside Playwright's specific isolated test environments when processing messages, we test
-  // the initialization and message queue successfully without asserting final E2E compression output,
-  // which is already validated on CI environments without dev-server dynamic imports.
-  test('MozJPEG WASM initializes and compresses an image', async ({ page }) => {
-    // Check if worker initializes
-    const hasWorker = await page.evaluate(() => typeof window.Worker !== 'undefined');
-    expect(hasWorker).toBeTruthy();
+  // Tests converted to interact with UI per guidelines for avoiding worker context destruction
 
-    // Select Engine
-    await page.getByRole('button', { name: 'MOZ', exact: true }).click({ force: true });
-    // Verify it is active
-    await expect(page.locator('button', { hasText: 'MOZ' }).first()).toHaveClass(/bg-white/);
+  test('MozJPEG WASM initializes and compresses an image', async ({ page }) => {
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text="Drop files here or tap to browse"');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
+    });
+
+    // Wait for the file to appear in the queue
+    await expect(page.locator('text=test.jpg')).toBeVisible();
+
+    // Start compression
+    await page.click('button:has-text("Process Queue")');
+
+    // Check if it finishes processing (the text "✨ Click to Compare" becomes visible when done)
+    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('OxiPNG WASM initializes and compresses an image', async ({ page }) => {
-    const hasWorker = await page.evaluate(() => typeof window.Worker !== 'undefined');
-    expect(hasWorker).toBeTruthy();
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text="Drop files here or tap to browse"');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
+    });
 
-    // Select Engine
-    await page.getByRole('button', { name: 'OXI', exact: true }).click({ force: true });
-    // Verify it is active
-    await expect(page.locator('button', { hasText: 'OXI' }).first()).toHaveClass(/bg-white/);
+    // Wait for the file to appear in the queue
+    await expect(page.locator('text=test.png')).toBeVisible();
+
+    // Start compression
+    await page.click('button:has-text("Process Queue")');
+
+    // Check if it finishes processing
+    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('AVIF WASM initializes and compresses an image (Single-thread bypass)', async ({ page }) => {
-    const hasWorker = await page.evaluate(() => typeof window.Worker !== 'undefined');
-    expect(hasWorker).toBeTruthy();
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click('text="Drop files here or tap to browse"');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'test.webp',
+      mimeType: 'image/webp',
+      buffer: Buffer.from('UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'base64')
+    });
 
-    // Select Engine
-    await page.getByRole('button', { name: 'AVIF', exact: true }).click({ force: true });
-    // Verify it is active
-    await expect(page.locator('button', { hasText: 'AVIF' }).first()).toHaveClass(/bg-white/);
+    // Wait for the file to appear in the queue
+    await expect(page.locator('text=test.webp')).toBeVisible();
+
+    // Start compression
+    await page.click('button:has-text("Process Queue")');
+
+    // Check if it finishes processing
+    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
   });
 
 });

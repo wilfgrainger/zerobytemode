@@ -79,11 +79,42 @@ const getCookie = (name: string): string | null => {
 };
 
 const setCookie = (name: string, value: string, options: string) => {
-  document.cookie = `${name}=${encodeURIComponent(value)}; ${options}`;
+  // Ensure cookies are shared across apex and www subdomains
+  const isProd = window.location.hostname.includes('zerobytemode.com');
+  const domain = isProd ? "; domain=.zerobytemode.com" : "";
+  const secure = isProd ? "; Secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; ${options}${domain}${secure}`;
 };
 
 const deleteCookie = (name: string) => {
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+  const isProd = window.location.hostname.includes('zerobytemode.com');
+  const baseOptions = "path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+
+  // 1. Try deleting without a domain
+  document.cookie = `${name}=; ${baseOptions}`;
+  document.cookie = `${name}=; ${baseOptions}; Secure`;
+
+  // 2. Try deleting with the apex domain explicitly if on production
+  if (isProd) {
+    document.cookie = `${name}=; ${baseOptions}; domain=.zerobytemode.com`;
+    document.cookie = `${name}=; ${baseOptions}; domain=.zerobytemode.com; Secure`;
+    document.cookie = `${name}=; ${baseOptions}; domain=zerobytemode.com`;
+    document.cookie = `${name}=; ${baseOptions}; domain=zerobytemode.com; Secure`;
+  }
+};
+
+// Helper to detect iOS
+const checkIsIOS = () => {
+  return typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+};
+
+// Pure utility moved outside component to prevent recreation on re-renders
+const formatSize = (bytes: number) => {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 export default function Home() {
@@ -100,7 +131,6 @@ export default function Home() {
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [loginSent, setLoginSent] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
   const [showIOSInstallInstructions, setShowIOSInstallInstructions] = useState(false);
@@ -111,15 +141,15 @@ export default function Home() {
   const selectedFile = files.find(f => f.id === selectedFileId);
 
   useEffect(() => {
-    const selected = selectedFile;
-    if (selected?.file) {
-      const url = URL.createObjectURL(selected.file);
+    const file = selectedFile?.file;
+    if (file) {
+      const url = URL.createObjectURL(file);
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     } else {
       setPreviewUrl(null);
     }
-  }, [selectedFileId, files]);
+  }, [selectedFile?.file]); // Only recreate preview URL when the actual file changes, not on every files array update (e.g. log progress)
 
   // Cleanup object URLs when a file is removed or component unmounts
   useEffect(() => {
@@ -132,11 +162,44 @@ export default function Home() {
 
 
   useEffect(() => {
-    // 0. Hydrate auth state from cookies (persists across refresh)
+    // 0. Hydrate auth state from cookies and validate session securely
     const cookieEmail = getCookie('zbm_user_email');
-    const cookiePro = getCookie('zbm_pro_tier');
+    const cookieToken = getCookie('zbm_session_token');
+
     if (cookieEmail) setEmail(cookieEmail);
-    if (cookiePro === 'true') setIsPro(true);
+
+    const validateSession = async () => {
+      if (!cookieToken) {
+        // STRICT: If no token, they are NOT Pro, regardless of other cookies
+        setIsPro(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${WORKER_URL}/auth/validate-session`, {
+          headers: { "Authorization": `Bearer ${cookieToken}` }
+        });
+        const data = await response.json();
+        if (response.ok && data.valid) {
+          setIsPro(data.isActive);
+          if (data.email) setEmail(data.email);
+          // Sync the pro cookie for UI hints, but the truth is from the token
+          setCookie("zbm_pro_tier", data.isActive ? "true" : "false", "path=/; max-age=2592000; SameSite=Lax");
+        } else {
+          // Token invalid or expired
+          setIsPro(false);
+          deleteCookie("zbm_session_token");
+          deleteCookie("zbm_pro_tier");
+        }
+      } catch (err) {
+        console.error("Session validation failed:", err);
+        // On network error, we don't grant Pro unless we already knew they were
+        // but strictly we should probably fail safe.
+        setIsPro(false);
+      }
+    };
+
+    validateSession();
 
     // 1. Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
@@ -151,12 +214,10 @@ export default function Home() {
     });
 
     // 3. Detect if already installed / standalone
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
 
     // Show install button for iOS users if not standalone
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isIOS = checkIsIOS();
     if (isIOS && !isStandalone) {
       setShowInstallBtn(true);
     }
@@ -168,8 +229,7 @@ export default function Home() {
   }, []);
 
   const handleInstallClick = async () => {
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isIOS = checkIsIOS();
 
     if (isIOS) {
       // iPhone doesn't support native prompt, show instructions
@@ -291,9 +351,6 @@ export default function Home() {
           autoLogin();
         }
       }
-      if (getCookie("zbm_pro_tier") === "true") {
-        setIsPro(true);
-      }
 
       const savedEmail = getCookie("zbm_user_email");
       if (savedEmail) setEmail(savedEmail);
@@ -402,14 +459,6 @@ export default function Home() {
     }
   };
 
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
   const [isStripeLoading, setIsStripeLoading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showUpgradeEmailModal, setShowUpgradeEmailModal] = useState(false);
@@ -486,8 +535,8 @@ export default function Home() {
     link.click();
   };
 
-  const handleLogout = () => {
-    hapticsImpact(ImpactStyle.Medium);
+  const handleLogout = async () => {
+    await hapticsImpact(ImpactStyle.Medium);
     deleteCookie("zbm_pro_tier");
     deleteCookie("zbm_user_email");
     deleteCookie("zbm_session_token");
@@ -536,194 +585,127 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen flex flex-col items-center selection:bg-white/20 relative overflow-hidden bg-background">
+    <div className="min-h-screen flex flex-col items-center selection:bg-white/20 relative overflow-hidden bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       {/* Background glow effects - Squoosh Vibrant Light Theme */}
       <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-pink-500/30 blur-[120px] rounded-full pointer-events-none animate-float opacity-80" />
       <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] bg-orange-400/20 blur-[140px] rounded-full pointer-events-none animate-float-delayed opacity-80" />
       <div className="absolute bottom-[-10%] left-[10%] w-[70%] h-[60%] bg-violet-600/15 blur-[160px] rounded-full pointer-events-none animate-float opacity-70" />
 
-      {/* Header */}
-      <header className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 relative z-10">
-        <div className="flex items-center gap-4 md:gap-5 group cursor-pointer w-full md:w-auto justify-between md:justify-start">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 md:w-20 md:h-20 p-2 bg-slate-900/5 border border-slate-900/10 rounded-2xl transition-all duration-500 group-hover:bg-slate-900/10 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0 shadow-sm">
-              <Image src="/logo.svg" alt="ZeroByteMode Logo" width={64} height={64} className="w-full h-full" />
+      {/* Header - App Style Top Bar */}
+      <header className="w-full max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-14 flex items-center justify-between relative z-[100]">
+        <div className="flex items-center gap-3 md:gap-6 group cursor-pointer">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 md:w-24 md:h-24 p-2 bg-slate-900/5 border border-slate-900/10 rounded-[28px] transition-all duration-500 group-hover:bg-slate-900/10 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0 shadow-sm relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Image src="/logo.svg" alt="ZeroByteMode Logo" width={80} height={80} className="w-full h-full relative z-10" />
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-xl font-black text-slate-900 tracking-tighter leading-none">ZeroByteMode</span>
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Studio Pro</span>
             </div>
           </div>
-
-          {/* Mobile Install Button (moved next to logo on mobile) */}
-          {showInstallBtn && (
-            <button
-              onClick={handleInstallClick}
-              className="md:hidden flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-[10px] font-bold text-blue-600 uppercase tracking-widest active:bg-blue-500/20 transition-all shadow-sm"
-            >
-              Install
-            </button>
-          )}
         </div>
-        <nav className="flex flex-wrap items-center gap-4 sm:gap-5 md:gap-8 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0">
+
+        <nav className="flex items-center gap-4 md:gap-8">
           {showInstallBtn && (
             <button
               onClick={handleInstallClick}
-              className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:bg-blue-500/20 transition-all shadow-sm"
+              className="flex items-center gap-2.5 px-5 py-2.5 bg-blue-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
             >
-              Install App
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+              INSTALL
             </button>
           )}
-          {isPro ? (
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2.5 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full shadow-sm">
+
+          <div className="flex items-center gap-4">
+            {isPro && (
+              <div id="pro-status-badge" className="hidden lg:flex items-center gap-2.5 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse" />
                 <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">STUDIO PRO</span>
               </div>
-              <button
-                onClick={handleLogout}
-                className="text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest"
-              >
-                Sign Out
-              </button>
-              <button
-                onClick={handleManageSubscription}
-                className="text-xs font-bold text-blue-600 hover:text-blue-500 transition-colors uppercase tracking-widest"
-              >
-                Billing
-              </button>
-              <button
-                onClick={() => {
-                  hapticsImpact(ImpactStyle.Light);
-                  setShowSupportModal(true);
-                }}
-                className="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors uppercase tracking-widest"
-              >
-                Support
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-4 sm:gap-6 w-full">
-              <button
-                onClick={() => {
-                  hapticsImpact(ImpactStyle.Light);
-                  setShowSignIn(true);
-                }}
-                className="text-[11px] sm:text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => handleGetPro()}
-                className="text-[11px] sm:text-sm font-black bg-slate-900 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-lg hover:shadow-slate-900/20 uppercase tracking-widest"
-              >
-                Upgrade to Pro
-              </button>
-            </div>
-          )}
+            )}
+
+            {email ? (
+              <>
+                {isPro ? (
+                  <button
+                    onClick={handleManageSubscription}
+                    className="text-xs font-black text-slate-900 hover:text-blue-600 transition-colors uppercase tracking-widest px-4 py-2 bg-slate-100 rounded-xl"
+                  >
+                    Billing
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleGetPro()}
+                    className="text-[10px] font-black bg-slate-900 text-white px-6 py-3.5 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
+                  >
+                    Go Pro
+                  </button>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                  title="Sign Out"
+                  aria-label="Sign Out"
+                >
+                  <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    hapticsImpact(ImpactStyle.Light);
+                    setShowSignIn(true);
+                  }}
+                  className="text-xs font-black text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest px-4"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => handleGetPro()}
+                  className="text-[10px] font-black bg-slate-900 text-white px-6 py-3.5 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
+                >
+                  Go Pro
+                </button>
+              </>
+            )}
+          </div>
         </nav>
       </header>
 
-      {/* Support Modal */}
-      <SupportModal
-        showSupportModal={showSupportModal}
-        setShowSupportModal={setShowSupportModal}
-        userEmail={email}
-      />
-
-      {/* Sign In Modal */}
-      <SignInModal
-        showSignIn={showSignIn}
-        setShowSignIn={setShowSignIn}
-        email={email}
-        setEmail={setEmail}
-        isLoginLoading={isLoginLoading}
-        loginSent={loginSent}
-        setLoginSent={setLoginSent}
-        handleSignIn={handleSignIn}
-        rememberMe={rememberMe}
-        setRememberMe={setRememberMe}
-      />
-
-      {/* Pro Email Collector Modal */}
-      <UpgradeEmailModal
-        showUpgradeEmailModal={showUpgradeEmailModal}
-        setShowUpgradeEmailModal={setShowUpgradeEmailModal}
-        setEmail={setEmail}
-        handleGetPro={handleGetPro}
-      />
-
-      {/* Stripe Loading Overlay */}
-      {isStripeLoading && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-white/60 backdrop-blur-2xl animate-in fade-in duration-500">
-          <div className="flex flex-col items-center">
-            <div className="w-24 h-24 p-4 bg-white rounded-3xl shadow-2xl border border-slate-900/5 mb-8 relative">
-              <div className="absolute inset-0 border-4 border-violet-500/20 border-t-violet-500 rounded-3xl animate-spin" />
-              <Image src="/logo.svg" alt="Logo" width={64} height={64} className="w-full h-full relative z-10" />
-            </div>
-            <p className="text-xs font-black text-slate-900 uppercase tracking-[0.3em] animate-pulse">Initializing Secure Gateway</p>
-          </div>
-        </div>
-      )}
-
-      {/* iOS Install Instructions */}
-      {showIOSInstallInstructions && (
-        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="w-full max-w-sm glass-panel p-10 border border-white/10 relative shadow-2xl rounded-3xl bg-zinc-950 text-center">
-            <button
-              onClick={() => setShowIOSInstallInstructions(false)}
-              className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-
-            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
-            </div>
-
-            <h2 className="text-2xl font-bold mb-4 tracking-tight text-white">Install on iPhone</h2>
-            <div className="space-y-6 text-left mb-10">
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">1</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Tap the <span className="text-white font-bold">Share icon</span> in the bottom toolbar of Safari.</p>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">2</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">&quot;Add to Home Screen&quot;</span>.</p>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">3</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Tap <span className="text-white font-bold">Add</span> in the top right corner.</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowIOSInstallInstructions(false)}
-              className="w-full h-12 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-6 pt-16 pb-24 flex flex-col items-center text-center relative z-10">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 md:px-10 pt-12 md:pt-20 pb-32 flex flex-col items-center text-center relative z-10">
 
         {/* Hero Section */}
-        <div className="text-center mt-20 mb-20 relative z-10">
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900 text-white mb-10 shadow-xl shadow-slate-900/20">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
-            <span className="text-[10px] font-black tracking-[0.2em] uppercase">Sovereign Local-First Engine</span>
+        <div className="text-center mb-32 md:mb-48 relative z-10">
+          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white border border-slate-900/5 text-slate-900 mb-12 shadow-xl shadow-slate-900/5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
+            <span className="text-[11px] font-black tracking-[0.2em] uppercase">Sovereign WASM Engine</span>
           </div>
-          <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter text-slate-900 mb-6 md:mb-8 relative leading-[0.9] sm:leading-[0.85] break-words hyphens-auto">
-            Professional<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-orange-500 to-violet-500 animate-gradient-x relative inline-block">Image Compressor.</span>
+          <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter text-slate-900 mb-10 md:mb-12 relative leading-[0.8]">
+            Make it<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-orange-500 to-violet-500 animate-gradient-x relative inline-block">Smaller.</span>
           </h1>
-          <p className="text-base sm:text-lg md:text-2xl text-slate-500 font-bold max-w-3xl mx-auto tracking-tight leading-relaxed px-4 opacity-90">
-            Compress and optimize images directly in your browser with professional WASM engines. 100% private. 0% server uploads.
+          <p className="text-xl md:text-3xl text-slate-500 font-bold max-w-3xl mx-auto tracking-tight leading-relaxed px-4 opacity-90">
+            Professional image optimization directly in your browser. 100% private. 0% server uploads.
           </p>
         </div>
 
         {/* Primary Action Zone */}
-        <div className="w-full max-w-4xl mb-24 relative px-4 md:px-0">
-          <div className="absolute -inset-4 bg-gradient-to-r from-violet-500/5 via-pink-500/5 to-orange-500/5 rounded-[48px] blur-3xl opacity-50 pointer-events-none" />
+        <div className="w-full max-w-5xl mb-40 md:mb-64 relative px-2 md:px-0">
+          <div className="absolute -inset-10 bg-gradient-to-r from-violet-500/10 via-pink-500/10 to-orange-500/10 rounded-[60px] blur-[100px] opacity-50 pointer-events-none" />
           <div
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                  fileInputRef.current.click();
+                }
+              }
+            }}
             onClick={() => {
               if (fileInputRef.current) {
                 fileInputRef.current.value = ""; // Reset input so same file can be selected again
@@ -733,14 +715,15 @@ export default function Home() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`w-full p-12 md:p-32 rounded-[40px] border-2 border-dashed relative overflow-hidden group cursor-pointer transition-all duration-700
-              ${isDragging ? 'border-violet-500 bg-violet-500/5 scale-[1.01] shadow-2xl' : 'border-slate-900/10 bg-white/80 backdrop-blur-md hover:border-slate-900/20 hover:shadow-2xl hover:bg-white'}
+            className={`w-full p-12 md:p-40 rounded-[48px] border-2 border-dashed relative overflow-hidden group cursor-pointer transition-all duration-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/50
+              ${isDragging ? 'border-violet-500 bg-violet-500/5 scale-[1.02] shadow-2xl' : 'border-slate-900/10 bg-white/90 backdrop-blur-xl hover:border-slate-900/20 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] hover:bg-white'}
               z-20`}
           >
             <input
               id="image-upload"
               name="image-upload"
               type="file"
+                aria-label="Upload images"
               ref={fileInputRef}
               onChange={handleFileInput}
               className="hidden"
@@ -750,18 +733,18 @@ export default function Home() {
 
             {/* Idle State */}
             <div className={`transition-all duration-500 transform ${isDragging ? 'scale-95 opacity-0 blur-sm' : 'scale-100 opacity-100 blur-0'}`}>
-              <div className="w-28 h-28 bg-slate-100 rounded-[32px] flex items-center justify-center mx-auto mb-12 border border-slate-900/5 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700 shadow-sm relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[32px]" />
-                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+              <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-50 rounded-[40px] flex items-center justify-center mx-auto mb-14 border border-slate-900/5 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700 shadow-sm relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[40px]" />
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               </div>
-              <h3 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter mb-6">Deploy Images.</h3>
-              <p className="text-lg md:text-xl text-slate-500 font-bold tracking-tight opacity-80">Drop files here or click to browse</p>
+              <h3 className="text-3xl md:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">Deploy Assets.</h3>
+              <p className="text-lg md:text-2xl text-slate-500 font-bold tracking-tight opacity-80">Drop files here or tap to browse</p>
 
-              <div className="mt-16 flex items-center justify-center gap-10">
+              <div className="mt-20 flex flex-wrap items-center justify-center gap-4 md:gap-12">
                 {['JPG', 'PNG', 'WEBP', 'AVIF'].map((fmt) => (
-                  <div key={fmt} className="flex items-center gap-2.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">{fmt}</span>
+                  <div key={fmt} className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-slate-200" />
+                    <span className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em]">{fmt}</span>
                   </div>
                 ))}
               </div>
@@ -770,10 +753,10 @@ export default function Home() {
         </div>
 
         {/* Security Badge */}
-        <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-white/50 backdrop-blur-md mb-32 border border-slate-900/5 shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
-          <span className="text-[11px] font-black tracking-[0.2em] text-slate-500 uppercase">
-            Military-Grade AES-256 Protected • Local Processing
+        <div className="inline-flex items-center gap-4 px-8 py-3.5 rounded-full bg-white border border-slate-900/5 shadow-lg shadow-slate-900/5 mb-48 md:mb-64">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
+          <span className="text-[12px] font-black tracking-[0.25em] text-slate-500 uppercase">
+            Military-Grade AES-256 Protected • Local First
           </span>
         </div>
 
@@ -782,7 +765,7 @@ export default function Home() {
           <div className="relative">
             <div className="w-full grid grid-cols-1 min-[600px]:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 p-10 md:p-12 rounded-[32px] bg-white border border-slate-900/10 shadow-2xl transition-all duration-700">
               <div className="text-left relative">
-                {!isPro && <div className="absolute inset-0 z-10 bg-transparent cursor-pointer group" onClick={() => handleGetPro()}><div className="hidden group-hover:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
                 <div className="flex justify-between items-center mb-2 transition-all duration-300">
                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Quality</span>
                   <span className="text-[11px] font-black text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-900/5">{Math.round(proQuality * 100)}%</span>
@@ -792,6 +775,7 @@ export default function Home() {
                   id="quality-range"
                   name="quality-range"
                   type="range"
+                  aria-label="Compression quality"
                   min="0.1"
                   max="1.0"
                   step="0.05"
@@ -813,13 +797,13 @@ export default function Home() {
                   ].map((eng) => (
                     <button
                       key={eng.id}
+                      aria-pressed={proEngine === eng.id}
                       onClick={() => {
                         if (!isPro && eng.isProOnly) {
                           handleGetPro();
                           return;
                         }
                         hapticsImpact(ImpactStyle.Light);
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                         setProEngine(eng.id as any);
                       }}
                       className={`py-3 px-1 rounded-xl text-[10px] uppercase font-black tracking-widest border transition-all duration-300 relative group
@@ -828,7 +812,7 @@ export default function Home() {
                       {eng.label}
                       {!isPro && eng.isProOnly && (
                         <div className="absolute top-0 right-0 -mt-1.5 -mr-1.5 bg-orange-500 text-white rounded-full p-1 shadow-lg flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                         </div>
                       )}
                     </button>
@@ -837,17 +821,18 @@ export default function Home() {
               </div>
 
               <div className="text-left relative">
-                {!isPro && <div className="absolute inset-0 z-10 bg-transparent cursor-pointer group" onClick={() => handleGetPro()}><div className="hidden group-hover:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Format</span>
                 <div className="flex p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
                   {['JPG', 'WEBP'].map((fmt) => (
                     <button
                       key={fmt}
+                      aria-pressed={proFormat === (fmt === 'JPG' ? 'image/jpeg' : 'image/webp')}
                       onClick={() => {
                         hapticsImpact(ImpactStyle.Light);
                         setProFormat(fmt === 'JPG' ? 'image/jpeg' : 'image/webp');
                       }}
-                      className={`flex-1 py-3 rounded-xl text-[11px] uppercase font-black tracking-widest border transition-all duration-300 
+                      className={`flex-1 py-3 rounded-xl text-[11px] uppercase font-black tracking-widest border transition-all duration-300
                         ${proFormat === (fmt === 'JPG' ? 'image/jpeg' : 'image/webp') ? 'bg-white text-slate-900 border-slate-200 shadow-sm z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-slate-200/50'}`}
                       disabled={!isPro}
                     >
@@ -858,10 +843,11 @@ export default function Home() {
               </div>
 
               <div className="text-left relative">
-                {!isPro && <div className="absolute inset-0 z-10 bg-transparent cursor-pointer group" onClick={() => handleGetPro()}><div className="hidden group-hover:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Archive</span>
                 <div className="flex p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
                   <button
+                    aria-pressed={encryptionEnabled}
                     onClick={() => {
                       hapticsImpact(ImpactStyle.Medium);
                       setEncryptionEnabled(!encryptionEnabled);
@@ -870,7 +856,7 @@ export default function Home() {
                       ${encryptionEnabled ? 'bg-slate-900 text-white border-slate-900 shadow-xl z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-slate-200/50'}`}
                     disabled={!isPro}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={encryptionEnabled ? "text-emerald-400" : ""}><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={encryptionEnabled ? "text-emerald-400" : ""}><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                     {encryptionEnabled ? "SECURE ZIP" : "STANDARD ZIP"}
                   </button>
                 </div>
@@ -899,16 +885,16 @@ export default function Home() {
                   {files.some(f => f.status === 'staged') && (
                     <button
                       onClick={handleStartCompression}
-                      className="flex-1 md:flex-none text-[11px] font-black px-8 py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] bg-slate-900 text-white shadow-xl hover:bg-slate-800 hover:scale-[1.02] active:scale-95"
+                      className="flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] bg-slate-900 text-white shadow-xl hover:bg-slate-800 hover:scale-[1.02] active:scale-95"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                       Process Queue
                     </button>
                   )}
                   {isPro && files.some(f => f.status === 'done') && (
                     <button
                       onClick={handleDownloadAll}
-                      className={`flex-1 md:flex-none text-[11px] font-black px-8 py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border ${encryptionEnabled ? "bg-emerald-500 text-slate-900 border-emerald-400 shadow-xl shadow-emerald-500/20 hover:bg-emerald-400" : "bg-white text-slate-900 border-slate-200 shadow-lg hover:bg-slate-50"}`}
+                      className={`flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border ${encryptionEnabled ? "bg-emerald-500 text-slate-900 border-emerald-400 shadow-xl shadow-emerald-500/20 hover:bg-emerald-400" : "bg-white text-slate-900 border-slate-200 shadow-lg hover:bg-slate-50"}`}
                     >
                       {encryptionEnabled ? "Secure Export" : "Download Archive"}
                     </button>
@@ -920,8 +906,16 @@ export default function Home() {
                 {files.map((file) => (
                   <div key={file.id} className="flex flex-col gap-3">
                     <div
+                      role={file.status === 'done' ? 'button' : undefined}
+                      tabIndex={file.status === 'done' ? 0 : undefined}
+                      onKeyDown={(e) => {
+                        if (file.status === 'done' && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault();
+                          setSelectedFileId(file.id);
+                        }
+                      }}
                       onClick={() => file.status === 'done' && setSelectedFileId(file.id)}
-                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-900/5 group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-slate-900/10 hover:bg-white hover:shadow-lg' : ''}`}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-900/5 group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-slate-900/10 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50' : ''}`}
                     >
                       <div className="flex items-center gap-6 flex-1 min-w-0 w-full">
                         <div className="w-16 h-16 rounded-[18px] bg-white border border-slate-900/5 flex items-center justify-center overflow-hidden flex-shrink-0 relative shadow-sm group/thumb">
@@ -973,9 +967,11 @@ export default function Home() {
                                 href={file.compressedUrl}
                                 download={`ZBM-${file.file.name}`}
                                 onClick={(e) => e.stopPropagation()}
+                                aria-label={`Download compressed ${file.file.name}`}
+                                title={`Download compressed ${file.file.name}`}
                                 className="p-3.5 bg-white border border-slate-900/5 hover:border-slate-900/10 text-slate-400 hover:text-slate-900 rounded-xl transition-all shadow-sm hover:shadow-md"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
                               </a>
                             </div>
                           </>
@@ -988,7 +984,7 @@ export default function Home() {
                       <div className="w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 to-black rounded-2xl p-4 md:p-6 overflow-hidden flex flex-col shadow-[inset_0_2px_15px_rgba(0,0,0,0.5)] border border-slate-900/10">
                         <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/5">
                           <div className="flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" /></svg>
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5" /><line x1="12" x2="19" y2="19" /></svg>
                             <span className="text-[11px] font-mono font-black text-zinc-500 tracking-[0.2em] uppercase">Engine Telemetry</span>
                           </div>
                           {file.status === 'processing' && (
@@ -1034,24 +1030,22 @@ export default function Home() {
                 <p className="text-lg md:text-xl text-slate-500 font-bold max-w-2xl mx-auto tracking-tight">Unlock professional WASM engines and secure batch processing for high-volume workflows.</p>
               </div>
 
-              <div className="relative overflow-x-auto custom-scrollbar rounded-[32px] border border-slate-900/10 bg-white shadow-2xl mx-4 md:mx-0">
-                <div className="min-w-[600px] w-full">
-                  <div className="grid grid-cols-3 border-b border-slate-900/5 bg-slate-50/50">
-                    <div className="p-8 text-left text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Capability</div>
-                    <div className="p-8 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Standard</div>
-                    <div className="p-8 text-center text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] bg-orange-500/5">Studio Pro</div>
-                  </div>
-                  {BENEFITS.map((row, i) => (
-                    <div key={i} className="grid grid-cols-3 border-b border-slate-900/5 last:border-0 hover:bg-slate-50/50 transition-colors group">
-                      <div className="p-8 text-left text-base font-bold text-slate-900 flex items-center gap-4">
-                        <span className="text-xl grayscale group-hover:grayscale-0 transition-all flex-shrink-0">{row.icon}</span>
-                        <span>{row.f}</span>
-                      </div>
-                      <div className="p-8 text-center text-sm font-bold text-slate-500 flex items-center justify-center">{row.s}</div>
-                      <div className="p-8 text-center text-sm font-black text-slate-900 bg-orange-500/[0.02] flex items-center justify-center">{row.p}</div>
-                    </div>
-                  ))}
+              <div className="relative overflow-hidden rounded-[32px] border border-slate-900/10 bg-white shadow-2xl">
+                <div className="flex border-b border-slate-900/5 bg-slate-50/50">
+                  <div className="flex-1 p-4 md:p-8 text-left text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Capability</div>
+                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Standard</div>
+                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] bg-orange-500/5">Studio Pro</div>
                 </div>
+                {BENEFITS.map((row, i) => (
+                  <div key={i} className="flex border-b border-slate-900/5 last:border-0 hover:bg-slate-50/50 transition-colors group">
+                    <div className="flex-1 p-4 md:p-8 text-left text-xs md:text-base font-bold text-slate-900 flex items-center gap-4">
+                      <span className="text-xl grayscale group-hover:grayscale-0 transition-all">{row.icon}</span>
+                      {row.f}
+                    </div>
+                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-bold text-slate-500">{row.s}</div>
+                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-black text-slate-900 bg-orange-500/[0.02]">{row.p}</div>
+                  </div>
+                ))}
               </div>
             </section>
           )}
@@ -1122,12 +1116,13 @@ export default function Home() {
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-10 bg-white/95 backdrop-blur-3xl animate-in zoom-in-95 duration-500">
           <div className="w-full h-full max-w-6xl flex flex-col relative">
             <header className="flex items-center justify-between mb-10">
-              <div className="flex items-center justify-center gap-4 sm:gap-6 w-full">
+              <div className="flex items-center gap-6">
                 <button
                   onClick={() => setSelectedFileId(null)}
+                  aria-label="Close inspector"
                   className="p-3 bg-slate-100 hover:bg-slate-200 border border-slate-900/5 rounded-2xl text-slate-900 transition-all shadow-sm"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                  <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Studio Inspector</h2>
@@ -1188,6 +1183,7 @@ export default function Home() {
                     id="compare-slider"
                     name="compare-slider"
                     type="range"
+                    aria-label="Compare original and compressed"
                     min="0"
                     max="100"
                     value={compareSliderPos}
@@ -1199,7 +1195,7 @@ export default function Home() {
                     style={{ left: `calc(${compareSliderPos}% - 0.5px)` }}
                   >
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-100">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 8-4 4-4 4M6 8l-4 4 4 4" /></svg>
+                      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 8-4 4-4 4M6 8l-4 4 4 4" /></svg>
                     </div>
                   </div>
                 </div>
@@ -1218,6 +1214,90 @@ export default function Home() {
               </div>
               <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] opacity-60">100% Sovereign Architecture • Zero Data Leaks</p>
             </footer>
+          </div>
+        </div>
+      )}
+
+      {/* Support Modal */}
+      <SupportModal
+        showSupportModal={showSupportModal}
+        setShowSupportModal={setShowSupportModal}
+        userEmail={email}
+      />
+
+      {/* Sign In Modal */}
+      <SignInModal
+        showSignIn={showSignIn}
+        setShowSignIn={setShowSignIn}
+        email={email}
+        setEmail={setEmail}
+        isLoginLoading={isLoginLoading}
+        loginSent={loginSent}
+        setLoginSent={setLoginSent}
+        handleSignIn={handleSignIn}
+        rememberMe={rememberMe}
+        setRememberMe={setRememberMe}
+      />
+
+      {/* Pro Email Collector Modal */}
+      <UpgradeEmailModal
+        showUpgradeEmailModal={showUpgradeEmailModal}
+        setShowUpgradeEmailModal={setShowUpgradeEmailModal}
+        setEmail={setEmail}
+        handleGetPro={handleGetPro}
+      />
+
+      {/* Stripe Loading Overlay */}
+      {isStripeLoading && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-white/60 backdrop-blur-2xl animate-in fade-in duration-500">
+          <div className="flex flex-col items-center">
+            <div className="w-24 h-24 p-4 bg-white rounded-3xl shadow-2xl border border-slate-900/5 mb-8 relative">
+              <div className="absolute inset-0 border-4 border-violet-500/20 border-t-violet-500 rounded-3xl animate-spin" />
+              <Image src="/logo.svg" alt="Logo" width={64} height={64} className="w-full h-full relative z-10" />
+            </div>
+            <p className="text-xs font-black text-slate-900 uppercase tracking-[0.3em] animate-pulse">Initializing Secure Gateway</p>
+          </div>
+        </div>
+      )}
+
+      {/* iOS Install Instructions */}
+      {showIOSInstallInstructions && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="w-full max-w-sm glass-panel p-10 border border-white/10 relative shadow-2xl rounded-3xl bg-zinc-950 text-center">
+            <button
+              onClick={() => setShowIOSInstallInstructions(false)}
+              aria-label="Close instructions"
+              className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
+            >
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+
+            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+            </div>
+
+            <h2 className="text-2xl font-bold mb-4 tracking-tight text-white">Install on iPhone</h2>
+            <div className="space-y-6 text-left mb-10">
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">1</div>
+                <p className="text-zinc-300 text-sm leading-relaxed">Tap the <span className="text-white font-bold">Share icon</span> in the bottom toolbar of Safari.</p>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">2</div>
+                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">&quot;Add to Home Screen&quot;</span>.</p>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">3</div>
+                <p className="text-zinc-300 text-sm leading-relaxed">Tap <span className="text-white font-bold">Add</span> in the top right corner.</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowIOSInstallInstructions(false)}
+              className="w-full h-12 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors"
+            >
+              Got it
+            </button>
           </div>
         </div>
       )}

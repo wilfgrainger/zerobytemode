@@ -18,6 +18,7 @@ export function UpgradeEmailModal({
             <div className="w-full max-w-sm glass-panel bg-white p-8 border border-slate-900/10 relative shadow-2xl rounded-3xl">
                 <button
                     onClick={() => setShowUpgradeEmailModal(false)}
+                    aria-label="Close"
                     className="absolute top-6 right-6 text-slate-500 hover:text-slate-900 transition-colors"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -41,6 +42,7 @@ export function UpgradeEmailModal({
                     }}
                     className="space-y-4"
                 >
+                    <label htmlFor="upgrade-email" className="sr-only">Email address</label>
                     <input
                         id="upgrade-email"
                         name="upgrade-email"

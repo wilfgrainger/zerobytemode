@@ -4,7 +4,9 @@
 async function getImageData(file: File | Blob): Promise<ImageData> {
   const bitmap = await createImageBitmap(file);
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const ctx = canvas.getContext("2d");
+  // Using willReadFrequently: true forces a software canvas, avoiding
+  // expensive GPU-to-CPU memory readbacks when calling getImageData() frequently
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("Could not get canvas context");
   ctx.drawImage(bitmap, 0, 0);
   const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
@@ -68,11 +70,12 @@ self.onmessage = async (e: MessageEvent) => {
     // MozJPEG — real WASM encoder, ~15-25% better than browser canvas
     // ----------------------------------------------------------------
     if (selectedEngine === "mozjpeg") {
-      postLog("Waking up MozJPEG WASM module...");
+      postLog("Waking up MozJPEG WASM module and decoding canvas vectors...");
       try {
-        const { encode } = await import("@jsquash/jpeg");
-        postLog("Decoding source image canvas vectors...");
-        const imageData = await getImageData(file);
+        const [ { encode }, imageData ] = await Promise.all([
+          import("@jsquash/jpeg"),
+          getImageData(file)
+        ]);
         // MozJPEG quality is 0–100
         postLog(`Executing Trellis quantization (Quality: ${Math.round(q * 100)}%)...`);
         const buffer = await encode(imageData, { quality: Math.round(q * 100) });
@@ -87,13 +90,14 @@ self.onmessage = async (e: MessageEvent) => {
     // OxiPNG — lossless Rust PNG optimiser (can't use quality param)
     // ----------------------------------------------------------------
     } else if (selectedEngine === "oxipng") {
-      postLog("Waking up OxiPNG Rust framework...");
+      postLog("Waking up OxiPNG Rust framework and mapping input buffers...");
       try {
-        const { optimise } = await import("@jsquash/oxipng");
+        const [ { optimise }, imageData ] = await Promise.all([
+          import("@jsquash/oxipng"),
+          getImageData(file)
+        ]);
         // optimise accepts ImageData or ArrayBuffer.
         // Use ImageData path — works for any source format.
-        postLog("Mapping input data buffers...");
-        const imageData = await getImageData(file);
         // level 3 is a good balance (1=fastest, 6=best compression)
         postLog("Running deep DEFLATE optimization passes (Lossless)...");
         const buffer = await optimise(imageData, { level: 3, interlace: false });
@@ -108,23 +112,20 @@ self.onmessage = async (e: MessageEvent) => {
     // AVIF — real libavif WASM, typically 40-50% smaller than JPEG
     // ----------------------------------------------------------------
     } else if (selectedEngine === "avif") {
-      postLog("Waking up libavif AOMedia Video engine...");
+      postLog("Waking up libavif AOMedia Video engine and decoding uncompressed canvas stream...");
       try {
         // Import separate encode submodule to call init() with locateFile,
         // forcing the single-threaded WASM binary. This bypasses the
         // multithreaded path that hangs when crossOriginIsolated=false.
-        const avifEncodeModule = await import("@jsquash/avif/encode");
-        // init() accepts one argument: moduleOptionOverrides which accepts locateFile
-        await avifEncodeModule.init({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          locateFile: (path: string) => {
-            // Redirect to the single-threaded wasm binary (no _mt suffix)
-            return path.replace("avif_enc_mt.wasm", "avif_enc.wasm");
-          },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
-        postLog("Decoding uncompressed canvas stream...");
-        const imageData = await getImageData(file);
+        const [ avifEncodeModule, imageData ] = await Promise.all([
+          import("@jsquash/avif/encode").then(async mod => {
+            await mod.init({
+              locateFile: (path: string) => path.replace("avif_enc_mt.wasm", "avif_enc.wasm"),
+            } as unknown as Parameters<typeof mod.init>[0]);
+            return mod;
+          }),
+          getImageData(file)
+        ]);
         postLog(`Executing structural encoding (Speed: 6, Quality: ${Math.round(q * 100)}%)...`);
         const buffer = await avifEncodeModule.default(imageData, { quality: Math.round(q * 100), speed: 6 });
         blob = new Blob([buffer], { type: "image/avif" });
@@ -132,8 +133,10 @@ self.onmessage = async (e: MessageEvent) => {
         postLog(`[WARNING] AVIF syntax failed: ${(err as Error).message}. Cascading to WebP.`);
         console.warn("[STUDIO] AVIF WASM failed, falling back to WebP:", err);
         try {
-          const { encode: encodeWebp } = await import("@jsquash/webp");
-          const imageData = await getImageData(file);
+          const [ { encode: encodeWebp }, imageData ] = await Promise.all([
+            import("@jsquash/webp"),
+            getImageData(file)
+          ]);
           const buffer = await encodeWebp(imageData, { quality: Math.round(q * 100) });
           blob = new Blob([buffer], { type: "image/webp" });
         } catch {
@@ -146,8 +149,10 @@ self.onmessage = async (e: MessageEvent) => {
     // ----------------------------------------------------------------
     } else if (selectedEngine === "webp") {
       try {
-        const { encode } = await import("@jsquash/webp");
-        const imageData = await getImageData(file);
+        const [ { encode }, imageData ] = await Promise.all([
+          import("@jsquash/webp"),
+          getImageData(file)
+        ]);
         const buffer = await encode(imageData, { quality: Math.round(q * 100) });
         blob = new Blob([buffer], { type: "image/webp" });
       } catch (err) {
