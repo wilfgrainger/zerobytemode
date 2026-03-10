@@ -14,6 +14,21 @@
           "detail": "string?"
         }
       },
+      "verify": {
+        "endpoint": "GET /auth/verify",
+        "query": {
+          "token": "string"
+        },
+        "response": {
+          "success": "boolean?",
+          "email": "string?",
+          "tier": "string?",
+          "isActive": "boolean?",
+          "sessionToken": "string?",
+          "error": "string?",
+          "detail": "string?"
+        }
+      },
       "validate-session": {
         "endpoint": "GET /auth/validate-session",
         "headers": {
@@ -21,8 +36,24 @@
         },
         "response": {
           "valid": "boolean",
-          "isActive": "boolean",
-          "email": "string?"
+          "isActive": "boolean?",
+          "email": "string?",
+          "error": "string?",
+          "detail": "string?"
+        }
+      }
+    },
+    "support": {
+      "submit": {
+        "endpoint": "POST /support",
+        "payload": {
+          "email": "string",
+          "message": "string"
+        },
+        "response": {
+          "success": "boolean",
+          "error": "string?",
+          "detail": "string?"
         }
       }
     },
@@ -33,8 +64,23 @@
           "email": "string"
         },
         "response": {
-          "url": "string",
-          "error": "string?"
+          "url": "string?",
+          "error": "string?",
+          "detail": "string?"
+        }
+      },
+      "verify-session": {
+        "endpoint": "GET /stripe/verify-session",
+        "query": {
+          "session_id": "string"
+        },
+        "response": {
+          "success": "boolean?",
+          "email": "string?",
+          "isActive": "boolean?",
+          "sessionToken": "string?",
+          "error": "string?",
+          "detail": "string?"
         }
       },
       "create-portal-session": {
@@ -46,8 +92,10 @@
           "Authorization": "Bearer <token>"
         },
         "response": {
-          "url": "string",
-          "error": "string?"
+          "url": "string?",
+          "error": "string?",
+          "detail": "string?",
+          "stripeRaw": "any?"
         }
       }
     }

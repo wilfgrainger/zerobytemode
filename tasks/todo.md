@@ -12,3 +12,10 @@
 - [x] Write `.spec/system.md` with Architecture, Core Logic, and Vibe.
 - [x] Write `.spec/interface.json` defining strict API schemas.
 - [x] Write `.spec/infra.md` documenting infrastructure and deployment constraints.
+
+## System Retrofit
+- [x] Audit `.spec/interface.json` vs API codebase.
+  - [x] Add `GET /auth/verify` endpoint contract.
+  - [x] Add `GET /stripe/verify-session` endpoint contract.
+  - [x] Add `POST /support` endpoint contract.
+- [x] Implement and verify changes.
