@@ -3,10 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Compression Codecs', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Navigate to the local build to ensure the web worker is served properly
-    // This requires the dev server to be running (e.g., `npm run dev`)
-    await page.goto('http://localhost:3000');
-    // Ensure the page and worker are loaded
+    // Navigate with success param to unlock Pro engines
+    await page.goto('/?success=true');
     await page.waitForLoadState('networkidle');
   });
 
