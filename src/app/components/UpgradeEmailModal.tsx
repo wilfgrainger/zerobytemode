@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ModalCloseButton } from "./ui";
 
 interface UpgradeEmailModalProps {
     showUpgradeEmailModal: boolean;

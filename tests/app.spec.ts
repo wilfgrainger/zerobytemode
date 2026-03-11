@@ -88,6 +88,19 @@ test.describe('ZeroByteMode Visual & Functional Review', () => {
     await expect(modal).not.toBeVisible();
   });
 
+  test('Upgrade modal opens and closes from Go Pro button', async ({ page }) => {
+    const goProButton = page.locator('button', { hasText: 'Go Pro' }).first();
+    await expect(goProButton).toBeVisible();
+    await goProButton.click();
+
+    const modal = page.locator('[role="dialog"][aria-labelledby="upgrade-modal-title"]');
+    await expect(modal).toBeVisible();
+    await expect(page.locator('#upgrade-modal-title')).toHaveText('Activate Pro Compression');
+
+    await page.locator('[aria-label="Close"]').first().click();
+    await expect(modal).not.toBeVisible();
+  });
+
   test('Footer has accessible Support button', async ({ page }) => {
     await expect(page.locator('footer button[aria-label="Open support modal"]')).toBeVisible();
   });
