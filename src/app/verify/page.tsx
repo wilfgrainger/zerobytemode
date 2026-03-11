@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { WORKER_URL } from "@/src/lib/constants";
+import { setCookie } from "@/src/lib/cookies";
 
 function VerifyContent() {
   const router = useRouter();
@@ -24,19 +25,16 @@ function VerifyContent() {
 
         if (response.ok) {
           const data = await response.json();
-          const isProd = window.location.hostname.includes('zerobytemode.com');
-          const domain = isProd ? "; domain=.zerobytemode.com" : "";
-          const secure = isProd ? "; Secure" : "";
-          const options = `path=/; max-age=2592000; SameSite=Lax${domain}${secure}`;
+          const cookieOptions = "path=/; max-age=2592000; SameSite=Lax";
 
           if (data.email) {
-            document.cookie = `zbm_user_email=${encodeURIComponent(data.email)}; ${options}`;
+            setCookie("zbm_user_email", data.email, cookieOptions);
           }
           if (data.sessionToken) {
-            document.cookie = `zbm_session_token=${encodeURIComponent(data.sessionToken)}; ${options}`;
+            setCookie("zbm_session_token", data.sessionToken, cookieOptions);
           }
           if (data.tier === "pro") {
-            document.cookie = `zbm_pro_tier=true; ${options}`;
+            setCookie("zbm_pro_tier", "true", cookieOptions);
           }
           setStatus("success");
           setTimeout(() => router.push("/"), 2000);

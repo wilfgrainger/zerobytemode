@@ -7,6 +7,7 @@ import Image from "next/image";
 import { SignInModal } from "./components/SignInModal";
 import { UpgradeEmailModal } from "./components/UpgradeEmailModal";
 import { SupportModal } from "./components/SupportModal";
+import { getCookie, setCookie, deleteCookie } from "@/src/lib/cookies";
 import { WORKER_URL } from "@/src/lib/constants";
 
 interface ImageFile {
@@ -70,38 +71,6 @@ const BENEFITS: BenefitRow[] = [
   { f: 'Workflow Engine', s: 'Single Image', p: 'Unlimited Batch Queue', icon: '📦' },
   { f: 'Security Layer', s: 'Standard ZIP', p: 'Military-Grade AES-256', icon: '🔒' },
 ];
-
-// Cookie helpers (avoids direct document.cookie access per lint rules)
-const getCookie = (name: string): string | null => {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.split("; ").find((row) => row.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.split("=")[1]) : null;
-};
-
-const setCookie = (name: string, value: string, options: string) => {
-  // Ensure cookies are shared across apex and www subdomains
-  const isProd = window.location.hostname.includes('zerobytemode.com');
-  const domain = isProd ? "; domain=.zerobytemode.com" : "";
-  const secure = isProd ? "; Secure" : "";
-  document.cookie = `${name}=${encodeURIComponent(value)}; ${options}${domain}${secure}`;
-};
-
-const deleteCookie = (name: string) => {
-  const isProd = window.location.hostname.includes('zerobytemode.com');
-  const baseOptions = "path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
-
-  // 1. Try deleting without a domain
-  document.cookie = `${name}=; ${baseOptions}`;
-  document.cookie = `${name}=; ${baseOptions}; Secure`;
-
-  // 2. Try deleting with the apex domain explicitly if on production
-  if (isProd) {
-    document.cookie = `${name}=; ${baseOptions}; domain=.zerobytemode.com`;
-    document.cookie = `${name}=; ${baseOptions}; domain=.zerobytemode.com; Secure`;
-    document.cookie = `${name}=; ${baseOptions}; domain=zerobytemode.com`;
-    document.cookie = `${name}=; ${baseOptions}; domain=zerobytemode.com; Secure`;
-  }
-};
 
 // Helper to detect iOS
 const checkIsIOS = () => {

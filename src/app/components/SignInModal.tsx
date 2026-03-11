@@ -1,5 +1,6 @@
 import { FormEvent } from "react";
 import Image from "next/image";
+import { GradientBar, LoadingSpinner, ModalCloseButton, SuccessIcon } from "./ui";
 
 interface SignInModalProps {
     showSignIn: boolean;
@@ -28,12 +29,17 @@ export function SignInModal({
 }: SignInModalProps) {
     if (!showSignIn) return null;
 
+    const handleClose = () => {
+        setShowSignIn(false);
+        setLoginSent(false);
+    };
+
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-white/80 backdrop-blur-xl animate-in fade-in duration-300">
             <div className="w-full max-w-sm bg-white border border-slate-900/10 relative shadow-2xl rounded-2xl overflow-hidden">
 
                 {/* Brand gradient top bar */}
-                <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-pink-500 to-orange-400" />
+                <GradientBar />
 
                 <div className="p-8">
                     {/* Header with logo */}
@@ -44,16 +50,7 @@ export function SignInModal({
                             </div>
                             <span className="font-bold text-sm tracking-tight text-slate-900">ZeroByteMode</span>
                         </div>
-                        <button
-                            onClick={() => {
-                                setShowSignIn(false);
-                                setLoginSent(false);
-                            }}
-                            aria-label="Close"
-                            className="w-8 h-8 flex items-center justify-center bg-slate-900/5 hover:bg-slate-900/10 rounded-full text-slate-400 hover:text-slate-900 transition-all"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
+                        <ModalCloseButton onClick={handleClose} />
                     </div>
 
                     {!loginSent ? (
@@ -110,7 +107,7 @@ export function SignInModal({
                                     className="w-full h-12 bg-gradient-to-r from-violet-600 via-pink-600 to-orange-500 text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {isLoginLoading ? (
-                                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                        <LoadingSpinner />
                                     ) : "Send Magic Link →"}
                                 </button>
                             </form>
@@ -118,9 +115,7 @@ export function SignInModal({
                         </>
                     ) : (
                         <div className="text-center py-4">
-                            <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-5 border border-emerald-500/20">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            </div>
+                            <SuccessIcon />
                             <h2 className="text-xl font-bold mb-2 tracking-tight text-slate-900">Check your email</h2>
                             <p className="text-slate-500 text-sm leading-relaxed">
                                 Sent to <span className="text-slate-900 font-semibold">{email}</span>.<br />Click the link to access your account.

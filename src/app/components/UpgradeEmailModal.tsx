@@ -1,3 +1,5 @@
+import { ModalCloseButton } from "./ui";
+
 interface UpgradeEmailModalProps {
     showUpgradeEmailModal: boolean;
     setShowUpgradeEmailModal: (show: boolean) => void;
@@ -16,13 +18,11 @@ export function UpgradeEmailModal({
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-white/60 backdrop-blur-xl animate-in fade-in duration-300">
             <div className="w-full max-w-sm glass-panel bg-white p-8 border border-slate-900/10 relative shadow-2xl rounded-3xl">
-                <button
+                <ModalCloseButton
                     onClick={() => setShowUpgradeEmailModal(false)}
-                    aria-label="Close"
                     className="absolute top-6 right-6 text-slate-500 hover:text-slate-900 transition-colors"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
+                    size={20}
+                />
 
                 <div className="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center mb-6 border border-orange-500/20">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
