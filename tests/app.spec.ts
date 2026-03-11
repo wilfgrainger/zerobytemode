@@ -49,4 +49,46 @@ test.describe('ZeroByteMode Visual & Functional Review', () => {
 
     // Check if the ZIP download button appears when files are added (not possible without actual files here)
   });
+
+  test('Support modal opens and closes from footer', async ({ page }) => {
+    // Find and click the Support button in the footer
+    const supportButton = page.locator('footer button[aria-label="Open support modal"]');
+    await expect(supportButton).toBeVisible();
+    await supportButton.click();
+
+    // Verify the Support modal is open
+    const modal = page.locator('[role="dialog"][aria-labelledby="support-modal-title"]');
+    await expect(modal).toBeVisible();
+    await expect(page.locator('#support-modal-title')).toBeVisible();
+
+    // Close with the X button
+    await page.locator('[aria-label="Close"]').first().click();
+    await expect(modal).not.toBeVisible();
+  });
+
+  test('Support modal closes on Escape key', async ({ page }) => {
+    const supportButton = page.locator('footer button[aria-label="Open support modal"]');
+    await supportButton.click();
+
+    const modal = page.locator('[role="dialog"][aria-labelledby="support-modal-title"]');
+    await expect(modal).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(modal).not.toBeVisible();
+  });
+
+  test('Sign in modal closes on Escape key', async ({ page }) => {
+    const signInButton = page.locator('button', { hasText: 'Sign In' }).first();
+    await signInButton.click();
+
+    const modal = page.locator('[role="dialog"][aria-labelledby="signin-modal-title"]');
+    await expect(modal).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(modal).not.toBeVisible();
+  });
+
+  test('Footer has accessible Support button', async ({ page }) => {
+    await expect(page.locator('footer button[aria-label="Open support modal"]')).toBeVisible();
+  });
 });

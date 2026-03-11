@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import Image from "next/image";
 import { WORKER_URL } from "@/src/lib/constants";
 
@@ -18,6 +18,15 @@ export function SupportModal({
     const [isSending, setIsSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!showSupportModal) return;
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setShowSupportModal(false);
+        };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [showSupportModal, setShowSupportModal]);
 
     if (!showSupportModal) return null;
 
@@ -56,7 +65,7 @@ export function SupportModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-white/80 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
+        <div role="dialog" aria-modal="true" aria-labelledby="support-modal-title" className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-white/80 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
             <div className="w-full max-w-lg rounded-2xl border border-slate-900/10 relative shadow-2xl flex flex-col overflow-hidden bg-white">
                 {/* Brand gradient top bar */}
                 <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-pink-500 to-orange-400" />
@@ -67,7 +76,7 @@ export function SupportModal({
                             <Image src="/logo.svg" alt="Logo" width={30} height={30} className="w-full h-full" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-base tracking-tight text-slate-900 leading-none">Contact Support</h3>
+                            <h3 id="support-modal-title" className="font-bold text-base tracking-tight text-slate-900 leading-none">Contact Support</h3>
                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-0.5">ZeroByteMode Team</p>
                         </div>
                     </div>
@@ -121,6 +130,8 @@ export function SupportModal({
                                     onChange={(e) => setMessage(e.target.value)}
                                     placeholder="Describe your issue or ask a question..."
                                     rows={5}
+                                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                                    autoFocus
                                     className="w-full bg-slate-50 border border-slate-900/10 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 resize-none"
                                 />
                             </div>
