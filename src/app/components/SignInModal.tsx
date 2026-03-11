@@ -1,4 +1,4 @@
-import { FormEvent } from "react";
+import { FormEvent, useEffect } from "react";
 import Image from "next/image";
 
 interface SignInModalProps {
@@ -26,10 +26,22 @@ export function SignInModal({
     rememberMe,
     setRememberMe,
 }: SignInModalProps) {
+    useEffect(() => {
+        if (!showSignIn) return;
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setShowSignIn(false);
+                setLoginSent(false);
+            }
+        };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [showSignIn, setShowSignIn, setLoginSent]);
+
     if (!showSignIn) return null;
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-white/80 backdrop-blur-xl animate-in fade-in duration-300">
+        <div role="dialog" aria-modal="true" aria-labelledby="signin-modal-title" className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-white/80 backdrop-blur-xl animate-in fade-in duration-300">
             <div className="w-full max-w-sm bg-white border border-slate-900/10 relative shadow-2xl rounded-2xl overflow-hidden">
 
                 {/* Brand gradient top bar */}
@@ -58,7 +70,7 @@ export function SignInModal({
 
                     {!loginSent ? (
                         <>
-                            <h2 className="text-xl font-bold mb-1 tracking-tight text-slate-900">Sign in to your account</h2>
+                            <h2 id="signin-modal-title" className="text-xl font-bold mb-1 tracking-tight text-slate-900">Sign in to your account</h2>
                             <p className="text-slate-500 text-sm mb-6">Enter your email to receive a secure magic link.</p>
 
                             <form onSubmit={handleSignIn} className="space-y-3">
@@ -71,6 +83,8 @@ export function SignInModal({
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
+                                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                                    autoFocus
                                     className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10 transition-all"
                                 />
 

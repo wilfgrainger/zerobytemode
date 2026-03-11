@@ -400,6 +400,16 @@ export default function Home() {
     }
   }, [files, isProcessingQueue]);
 
+  // Close comparison modal on Escape key
+  useEffect(() => {
+    if (!selectedFileId) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedFileId(null);
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectedFileId]);
+
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
@@ -526,6 +536,25 @@ export default function Home() {
     link.href = url;
     link.download = filename;
     link.click();
+  };
+
+  const handleRemoveFile = (id: string) => {
+    hapticsImpact(ImpactStyle.Light);
+    setFiles(prev => {
+      const file = prev.find(f => f.id === id);
+      if (file?.compressedUrl) URL.revokeObjectURL(file.compressedUrl);
+      return prev.filter(f => f.id !== id);
+    });
+    if (selectedFileId === id) setSelectedFileId(null);
+  };
+
+  const handleClearQueue = () => {
+    hapticsImpact(ImpactStyle.Medium);
+    setFiles(prev => {
+      prev.forEach(f => { if (f.compressedUrl) URL.revokeObjectURL(f.compressedUrl); });
+      return [];
+    });
+    setSelectedFileId(null);
   };
 
   const handleLogout = async () => {
@@ -892,6 +921,14 @@ export default function Home() {
                       {encryptionEnabled ? "Secure Export" : "Download Archive"}
                     </button>
                   )}
+                  <button
+                    onClick={handleClearQueue}
+                    aria-label="Clear all files from queue"
+                    className="flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 active:scale-95"
+                  >
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+                    Clear All
+                  </button>
                 </div>
               </div>
 
@@ -934,7 +971,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-10 w-full sm:w-auto mt-4 sm:mt-0 pl-0 sm:pl-8">
+                       <div className="flex items-center justify-between sm:justify-end gap-10 w-full sm:w-auto mt-4 sm:mt-0 pl-0 sm:pl-8">
                         {file.status === 'processing' && (
                           <div className="flex items-center gap-3">
                             <div className="w-4 h-4 border-2 border-slate-900/10 border-t-slate-900 rounded-full animate-spin" />
@@ -946,6 +983,20 @@ export default function Home() {
                           <div className="flex items-center gap-3">
                             <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
                             <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Staged</span>
+                          </div>
+                        )}
+
+                        {file.status === 'pending' && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em]">Queued</span>
+                          </div>
+                        )}
+
+                        {file.status === 'error' && (
+                          <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                            <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">Failed</span>
                           </div>
                         )}
 
@@ -969,6 +1020,14 @@ export default function Home() {
                             </div>
                           </>
                         )}
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleRemoveFile(file.id); }}
+                          aria-label={`Remove ${file.file.name} from queue`}
+                          className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all ml-2 flex-shrink-0"
+                        >
+                          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
                       </div>
                     </div>
 
@@ -1098,15 +1157,22 @@ export default function Home() {
       <footer className="w-full max-w-6xl mx-auto px-6 py-20 border-t border-slate-900/5 mt-auto flex flex-col md:flex-row items-center justify-between text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
         <p>© 2026 ZeroByteMode. Private by design.</p>
         <div className="flex gap-10 mt-8 md:mt-0">
-          <a href="#" className="hover:text-slate-900 transition-colors">Documentation</a>
-          <a href="#" className="hover:text-slate-900 transition-colors">Privacy</a>
-          <a href="#" className="hover:text-slate-900 transition-colors">Terms</a>
+          <a href="https://docs.zerobytemode.com" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 transition-colors">Documentation</a>
+          <a href="https://www.zerobytemode.com/privacy" className="hover:text-slate-900 transition-colors">Privacy</a>
+          <a href="https://www.zerobytemode.com/terms" className="hover:text-slate-900 transition-colors">Terms</a>
+          <button
+            onClick={() => setShowSupportModal(true)}
+            aria-label="Open support modal"
+            className="hover:text-slate-900 transition-colors"
+          >
+            Support
+          </button>
         </div>
       </footer>
 
       {/* Comparison Workspace Modal */}
       {selectedFileId && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-10 bg-white/95 backdrop-blur-3xl animate-in zoom-in-95 duration-500">
+        <div role="dialog" aria-modal="true" aria-labelledby="inspector-modal-title" className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-10 bg-white/95 backdrop-blur-3xl animate-in zoom-in-95 duration-500">
           <div className="w-full h-full max-w-6xl flex flex-col relative">
             <header className="flex items-center justify-between mb-10">
               <div className="flex items-center gap-6">
@@ -1118,7 +1184,7 @@ export default function Home() {
                   <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Studio Inspector</h2>
+                  <h2 id="inspector-modal-title" className="text-2xl font-black text-slate-900 tracking-tighter">Studio Inspector</h2>
                   <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{selectedFile?.file.name}</p>
                 </div>
               </div>
@@ -1242,7 +1308,7 @@ export default function Home() {
 
       {/* Stripe Loading Overlay */}
       {isStripeLoading && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-white/60 backdrop-blur-2xl animate-in fade-in duration-500">
+        <div role="status" aria-live="polite" aria-label="Initializing secure checkout" className="fixed inset-0 z-[130] flex items-center justify-center bg-white/60 backdrop-blur-2xl animate-in fade-in duration-500">
           <div className="flex flex-col items-center">
             <div className="w-24 h-24 p-4 bg-white rounded-3xl shadow-2xl border border-slate-900/5 mb-8 relative">
               <div className="absolute inset-0 border-4 border-violet-500/20 border-t-violet-500 rounded-3xl animate-spin" />
@@ -1255,7 +1321,7 @@ export default function Home() {
 
       {/* iOS Install Instructions */}
       {showIOSInstallInstructions && (
-        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
+        <div role="dialog" aria-modal="true" aria-labelledby="ios-install-title" className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
           <div className="w-full max-w-sm glass-panel p-10 border border-white/10 relative shadow-2xl rounded-3xl bg-zinc-950 text-center">
             <button
               onClick={() => setShowIOSInstallInstructions(false)}
@@ -1269,7 +1335,7 @@ export default function Home() {
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
             </div>
 
-            <h2 className="text-2xl font-bold mb-4 tracking-tight text-white">Install on iPhone</h2>
+            <h2 id="ios-install-title" className="text-2xl font-bold mb-4 tracking-tight text-white">Install on iPhone</h2>
             <div className="space-y-6 text-left mb-10">
               <div className="flex items-start gap-4">
                 <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">1</div>
