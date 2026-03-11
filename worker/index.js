@@ -88,6 +88,15 @@ const isActiveSubscriptionForEmail = async (env, email) => {
   return isActive
 }
 
+const isValidUrl = (urlStr, allowedOrigins) => {
+  try {
+    const u = new URL(urlStr)
+    return allowedOrigins.includes(u.origin)
+  } catch (e) {
+    return false
+  }
+}
+
 const byteToHex = []
 for (let n = 0; n <= 0xff; ++n) {
   byteToHex.push(n.toString(16).padStart(2, '0'))
@@ -260,16 +269,7 @@ export default {
           return json({ error: 'Failed to generate secure token', detail: dbErr.message }, 500)
         }
 
-        const isValidUrl = (urlStr) => {
-          try {
-            const u = new URL(urlStr)
-            return allowedOrigins.includes(u.origin)
-          } catch (e) {
-            return false
-          }
-        }
-
-        const validSiteUrl = siteUrl && isValidUrl(siteUrl) ? siteUrl : (env.BASE_URL || 'http://localhost:3000')
+        const validSiteUrl = siteUrl && isValidUrl(siteUrl, allowedOrigins) ? siteUrl : (env.BASE_URL || 'http://localhost:3000')
         const baseUrl = validSiteUrl.replace(/\/$/, '')
         const magicLink = `${baseUrl}/verify?token=${encodeURIComponent(token)}`
 
@@ -552,16 +552,7 @@ export default {
 
         const { returnUrl } = await request.json()
 
-        const isValidUrl = (urlStr) => {
-          try {
-            const u = new URL(urlStr)
-            return allowedOrigins.includes(u.origin)
-          } catch (e) {
-            return false
-          }
-        }
-
-        const validReturnUrl = returnUrl && isValidUrl(returnUrl) ? returnUrl : (env.BASE_URL || 'https://www.zerobytemode.com')
+        const validReturnUrl = returnUrl && isValidUrl(returnUrl, allowedOrigins) ? returnUrl : (env.BASE_URL || 'https://www.zerobytemode.com')
 
         let customerId = await getCustomerIdByEmail(env, email)
         if (!customerId) {
