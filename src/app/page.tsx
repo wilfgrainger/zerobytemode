@@ -577,10 +577,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center selection:bg-white/20 relative overflow-hidden bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      {/* Background glow effects - Warm Editorial Goût Theme */}
-      <div className="absolute top-[-12%] left-[-8%] w-[55%] h-[55%] bg-amber-400/20 blur-[130px] rounded-full pointer-events-none animate-float opacity-70" />
-      <div className="absolute top-[15%] right-[-12%] w-[50%] h-[50%] bg-orange-300/15 blur-[150px] rounded-full pointer-events-none animate-float-delayed opacity-60" />
-      <div className="absolute bottom-[-8%] left-[15%] w-[65%] h-[55%] bg-rose-400/10 blur-[160px] rounded-full pointer-events-none animate-float opacity-50" />
+      {/* Background glow effects - Squoosh Vibrant Light Theme */}
+      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-pink-500/30 blur-[120px] rounded-full pointer-events-none animate-float opacity-80" />
+      <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] bg-orange-400/20 blur-[140px] rounded-full pointer-events-none animate-float-delayed opacity-80" />
+      <div className="absolute bottom-[-10%] left-[10%] w-[70%] h-[60%] bg-violet-600/15 blur-[160px] rounded-full pointer-events-none animate-float opacity-70" />
 
       {/* Header - App Style Top Bar */}
       <header className="w-full max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-14 flex items-center justify-between relative z-[100]">
