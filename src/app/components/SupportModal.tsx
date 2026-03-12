@@ -66,19 +66,19 @@ export function SupportModal({
     };
 
     return (
-        <div role="dialog" aria-modal="true" aria-labelledby="support-modal-title" className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-white/80 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
-            <div className="w-full max-w-lg rounded-2xl border border-slate-900/10 relative shadow-2xl flex flex-col overflow-hidden bg-white">
-                {/* Brand gradient top bar */}
+        <div role="dialog" aria-modal="true" aria-labelledby="support-modal-title" className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300 overflow-y-auto">
+            <div className="w-full max-w-lg rounded-xl border border-[#2A2A2A] relative shadow-2xl flex flex-col overflow-hidden bg-[#161616]">
+                {/* Brand accent top bar */}
                 <GradientBar />
 
-                <div className="px-6 py-4 border-b border-slate-900/5 flex items-center justify-between bg-slate-50">
+                <div className="px-6 py-4 border-b border-[#2A2A2A] flex items-center justify-between bg-[#1E1E1E]">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 p-1 bg-slate-900/5 rounded-xl border border-slate-900/10">
+                        <div className="w-9 h-9 p-1 bg-white/5 rounded-lg border border-[#2A2A2A]">
                             <Image src="/logo.svg" alt="Logo" width={30} height={30} className="w-full h-full" />
                         </div>
                         <div>
-                            <h3 id="support-modal-title" className="font-bold text-base tracking-tight text-slate-900 leading-none">Contact Support</h3>
-                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-0.5">ZeroByteMode Team</p>
+                            <h3 id="support-modal-title" className="font-bold text-base tracking-tight text-zinc-100 leading-none font-[family-name:var(--font-syne)]">Contact Support</h3>
+                            <p className="text-[10px] text-zinc-600 uppercase font-bold tracking-widest mt-0.5 font-mono">ZeroByteMode Team</p>
                         </div>
                     </div>
                     <ModalCloseButton onClick={() => setShowSupportModal(false)} size={18} />
@@ -88,21 +88,21 @@ export function SupportModal({
                     {sent ? (
                         <div className="text-center py-8 animate-in zoom-in duration-300">
                             <SuccessIcon />
-                            <h2 className="text-xl font-bold mb-2 tracking-tight text-slate-900">Message Sent!</h2>
-                            <p className="text-slate-500 text-sm leading-relaxed">
+                            <h2 className="text-xl font-bold mb-2 tracking-tight text-zinc-100 font-[family-name:var(--font-syne)]">Message Sent!</h2>
+                            <p className="text-zinc-500 text-sm leading-relaxed">
                                 We&apos;ve received your request and will get back to you shortly.
                             </p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {error && (
-                                <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
                                     {error}
                                 </div>
                             )}
 
                             <div>
-                                <label htmlFor="email" className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Your Email</label>
+                                <label htmlFor="email" className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1 font-mono">Your Email</label>
                                 <input
                                     id="email"
                                     type="email"
@@ -110,12 +110,12 @@ export function SupportModal({
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email address"
-                                    className="w-full bg-slate-50 border border-slate-900/10 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500"
+                                    className="w-full bg-black/40 border border-[#2A2A2A] rounded-lg px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 font-mono"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="message" className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">How can we help?</label>
+                                <label htmlFor="message" className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 ml-1 font-mono">How can we help?</label>
                                 <textarea
                                     id="message"
                                     required
@@ -125,14 +125,14 @@ export function SupportModal({
                                     rows={5}
                                     // eslint-disable-next-line jsx-a11y/no-autofocus
                                     autoFocus
-                                    className="w-full bg-slate-50 border border-slate-900/10 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 resize-none"
+                                    className="w-full bg-black/40 border border-[#2A2A2A] rounded-lg px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50 resize-none font-mono"
                                 />
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={isSending}
-                                className="w-full py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 overflow-hidden relative group"
+                                className="w-full py-3.5 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 transition-all flex items-center justify-center gap-2 overflow-hidden relative group font-[family-name:var(--font-syne)]"
                             >
                                 {isSending ? (
                                     <LoadingSpinner />

@@ -1,57 +1,75 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --accent: #6366f1;
+  --background: #0D0D0D;
+  --foreground: #E8E4E0;
+  --accent: #E8A55D;
+  --surface: #161616;
+  --surface-elevated: #1E1E1E;
+  --border: #2A2A2A;
+  --muted: #8A8580;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-syne);
+  --font-mono: var(--font-jetbrains);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
 }
 
-/* Glassmorphism for modern Light Mode (Squoosh style) */
+/* Industrial panel surfaces */
 @layer utilities {
-  .glass {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-  }
-  
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(32px);
-    -webkit-backdrop-filter: blur(32px);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.05), 0 0 40px -10px rgba(100, 100, 255, 0.05);
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
   }
 
-  .text-glow {
-    text-shadow: 0 0 24px rgba(255, 255, 255, 0.8);
+  .panel-elevated {
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.5);
   }
+
+  .text-glow-amber {
+    text-shadow: 0 0 20px rgba(232, 165, 93, 0.4);
+  }
+
+  .border-glow-amber {
+    box-shadow: 0 0 16px -4px rgba(232, 165, 93, 0.15);
+  }
+}
+
+/* Noise overlay via pseudo-element */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
 /* Animations */
 @keyframes float {
   0% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-20px) scale(1.02); }
+  50% { transform: translateY(-12px) scale(1.01); }
   100% { transform: translateY(0px) scale(1); }
 }
 
 @keyframes float-delayed {
   0% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-15px) scale(1.05); }
+  50% { transform: translateY(-8px) scale(1.02); }
   100% { transform: translateY(0px) scale(1); }
 }
 
@@ -66,16 +84,34 @@ body {
   }
 }
 
+@keyframes pulse-warm {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes stagger-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .animate-float {
-  animation: float 8s ease-in-out infinite;
+  animation: float 10s ease-in-out infinite;
 }
 
 .animate-float-delayed {
-  animation: float-delayed 10s ease-in-out infinite 2s;
+  animation: float-delayed 12s ease-in-out infinite 2s;
 }
 
 .animate-gradient-x {
-  animation: gradient-x 4s ease infinite;
+  animation: gradient-x 6s ease infinite;
+}
+
+.animate-pulse-warm {
+  animation: pulse-warm 3s ease-in-out infinite;
+}
+
+.animate-stagger-in {
+  animation: stagger-in 0.6s ease-out both;
 }
 
 /* Custom Scrollbar */
@@ -84,13 +120,29 @@ body {
   width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.02);
+  background: rgba(255,255,255,0.02);
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.08);
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.15);
+}
+
+/* Global scrollbar dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3A3A3A;
 }

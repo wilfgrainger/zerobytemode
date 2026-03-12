@@ -576,43 +576,42 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen flex flex-col items-center selection:bg-white/20 relative overflow-hidden bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      {/* Background glow effects - Squoosh Vibrant Light Theme */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-pink-500/30 blur-[120px] rounded-full pointer-events-none animate-float opacity-80" />
-      <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] bg-orange-400/20 blur-[140px] rounded-full pointer-events-none animate-float-delayed opacity-80" />
-      <div className="absolute bottom-[-10%] left-[10%] w-[70%] h-[60%] bg-violet-600/15 blur-[160px] rounded-full pointer-events-none animate-float opacity-70" />
+    <div className="min-h-screen flex flex-col items-center selection:bg-amber-500/20 relative overflow-hidden bg-background pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      {/* Background ambient glows - warm industrial */}
+      <div className="absolute top-[-20%] left-[-15%] w-[50%] h-[50%] bg-amber-500/5 blur-[160px] rounded-full pointer-events-none animate-float" />
+      <div className="absolute top-[30%] right-[-15%] w-[40%] h-[40%] bg-amber-600/3 blur-[180px] rounded-full pointer-events-none animate-float-delayed" />
+      <div className="absolute bottom-[-15%] left-[5%] w-[60%] h-[50%] bg-zinc-800/50 blur-[200px] rounded-full pointer-events-none animate-float" />
 
-      {/* Header - App Style Top Bar */}
-      <header className="w-full max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-14 flex items-center justify-between relative z-[100]">
+      {/* Header - Industrial Control Bar */}
+      <header className="w-full max-w-7xl mx-auto px-6 md:px-10 py-6 md:py-10 flex items-center justify-between relative z-[100]">
         <div className="flex items-center gap-3 md:gap-6 group cursor-pointer">
           <div className="flex items-center gap-5">
-            <div className="w-14 h-14 md:w-24 md:h-24 p-2 bg-slate-900/5 border border-slate-900/10 rounded-[28px] transition-all duration-500 group-hover:bg-slate-900/10 group-hover:scale-105 group-hover:rotate-2 flex-shrink-0 shadow-sm relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="w-14 h-14 md:w-20 md:h-20 p-2 bg-[#161616] border border-[#2A2A2A] rounded-xl transition-all duration-500 group-hover:border-amber-500/30 group-hover:shadow-[0_0_24px_-8px_rgba(232,165,93,0.2)] flex-shrink-0 relative overflow-hidden">
               <Image src="/logo.svg" alt="ZeroByteMode Logo" width={80} height={80} className="w-full h-full relative z-10" />
             </div>
             <div className="hidden sm:flex flex-col">
-              <span className="text-xl font-black text-slate-900 tracking-tighter leading-none">ZeroByteMode</span>
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Studio Pro</span>
+              <span className="text-xl font-extrabold text-zinc-100 tracking-tighter leading-none font-[family-name:var(--font-syne)]">ZeroByteMode</span>
+              <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em] mt-1 font-mono">Studio Pro</span>
             </div>
           </div>
         </div>
 
-        <nav className="flex items-center gap-4 md:gap-8">
+        <nav className="flex items-center gap-4 md:gap-6">
           {showInstallBtn && (
             <button
               onClick={handleInstallClick}
-              className="flex items-center gap-2.5 px-5 py-2.5 bg-blue-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+              className="flex items-center gap-2.5 px-5 py-2.5 bg-amber-500 text-black rounded-lg text-[10px] font-extrabold uppercase tracking-widest hover:bg-amber-400 active:scale-95 transition-all shadow-lg shadow-amber-500/10 font-[family-name:var(--font-syne)]"
             >
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
               INSTALL
             </button>
           )}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {isPro && (
-              <div id="pro-status-badge" className="hidden lg:flex items-center gap-2.5 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full shadow-sm">
-                <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse" />
-                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">STUDIO PRO</span>
+              <div id="pro-status-badge" className="hidden lg:flex items-center gap-2.5 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(232,165,93,0.6)] animate-pulse" />
+                <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest font-mono">STUDIO PRO</span>
               </div>
             )}
 
@@ -621,21 +620,21 @@ export default function Home() {
                 {isPro ? (
                   <button
                     onClick={handleManageSubscription}
-                    className="text-xs font-black text-slate-900 hover:text-blue-600 transition-colors uppercase tracking-widest px-4 py-2 bg-slate-100 rounded-xl"
+                    className="text-xs font-bold text-zinc-400 hover:text-amber-400 transition-colors uppercase tracking-widest px-4 py-2 bg-[#161616] border border-[#2A2A2A] rounded-lg font-mono"
                   >
                     Billing
                   </button>
                 ) : (
                   <button
                     onClick={() => handleGetPro()}
-                    className="text-[10px] font-black bg-slate-900 text-white px-6 py-3.5 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
+                    className="text-[10px] font-extrabold bg-amber-500 text-black px-6 py-3.5 rounded-lg hover:bg-amber-400 active:scale-95 transition-all shadow-lg shadow-amber-500/10 uppercase tracking-widest font-[family-name:var(--font-syne)]"
                   >
                     Go Pro
                   </button>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                  className="w-10 h-10 flex items-center justify-center bg-[#161616] border border-[#2A2A2A] text-zinc-400 rounded-lg hover:text-zinc-200 hover:border-zinc-600 transition-all active:scale-95"
                   title="Sign Out"
                   aria-label="Sign Out"
                 >
@@ -649,13 +648,13 @@ export default function Home() {
                     hapticsImpact(ImpactStyle.Light);
                     setShowSignIn(true);
                   }}
-                  className="text-xs font-black text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest px-4"
+                  className="text-xs font-bold text-zinc-500 hover:text-zinc-200 transition-colors uppercase tracking-widest px-4 font-mono"
                 >
                   Sign In
                 </button>
                 <button
                   onClick={() => handleGetPro()}
-                  className="text-[10px] font-black bg-slate-900 text-white px-6 py-3.5 rounded-full hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-900/10 uppercase tracking-widest"
+                  className="text-[10px] font-extrabold bg-amber-500 text-black px-6 py-3.5 rounded-lg hover:bg-amber-400 active:scale-95 transition-all shadow-lg shadow-amber-500/10 uppercase tracking-widest font-[family-name:var(--font-syne)]"
                 >
                   Go Pro
                 </button>
@@ -670,21 +669,21 @@ export default function Home() {
 
         {/* Hero Section */}
         <div className="text-center mb-32 md:mb-48 relative z-10">
-          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white border border-slate-900/5 text-slate-900 mb-12 shadow-xl shadow-slate-900/5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
-            <span className="text-[11px] font-black tracking-[0.2em] uppercase">Sovereign WASM Engine</span>
+          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-lg bg-[#161616] border border-[#2A2A2A] text-zinc-300 mb-12">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)] animate-pulse" />
+            <span className="text-[11px] font-bold tracking-[0.2em] uppercase font-mono">Sovereign WASM Engine</span>
           </div>
-          <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter text-slate-900 mb-10 md:mb-12 relative leading-[0.8]">
-            Make it<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-orange-500 to-violet-500 animate-gradient-x relative inline-block">Smaller.</span>
+          <h1 className="text-7xl md:text-[10rem] font-extrabold tracking-tighter text-zinc-100 mb-10 md:mb-12 relative leading-[0.8] font-[family-name:var(--font-syne)]">
+            Make it<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 animate-gradient-x relative inline-block text-glow-amber">Smaller.</span>
           </h1>
-          <p className="text-xl md:text-3xl text-slate-500 font-bold max-w-3xl mx-auto tracking-tight leading-relaxed px-4 opacity-90">
+          <p className="text-xl md:text-3xl text-zinc-500 font-medium max-w-3xl mx-auto tracking-tight leading-relaxed px-4">
             Professional image optimization directly in your browser. 100% private. 0% server uploads.
           </p>
         </div>
 
         {/* Primary Action Zone */}
         <div className="w-full max-w-5xl mb-40 md:mb-64 relative px-2 md:px-0">
-          <div className="absolute -inset-10 bg-gradient-to-r from-violet-500/10 via-pink-500/10 to-orange-500/10 rounded-[60px] blur-[100px] opacity-50 pointer-events-none" />
+          <div className="absolute -inset-10 bg-gradient-to-r from-amber-500/5 via-amber-600/3 to-amber-500/5 rounded-[40px] blur-[80px] opacity-50 pointer-events-none" />
           <div
             role="button"
             tabIndex={0}
@@ -706,8 +705,8 @@ export default function Home() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`w-full p-12 md:p-40 rounded-[48px] border-2 border-dashed relative overflow-hidden group cursor-pointer transition-all duration-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/50
-              ${isDragging ? 'border-violet-500 bg-violet-500/5 scale-[1.02] shadow-2xl' : 'border-slate-900/10 bg-white/90 backdrop-blur-xl hover:border-slate-900/20 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] hover:bg-white'}
+            className={`w-full p-12 md:p-40 rounded-2xl border-2 border-dashed relative overflow-hidden group cursor-pointer transition-all duration-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/30
+              ${isDragging ? 'border-amber-500 bg-amber-500/5 scale-[1.01] shadow-[0_0_40px_-10px_rgba(232,165,93,0.2)]' : 'border-[#2A2A2A] bg-[#161616] hover:border-zinc-600 hover:shadow-[0_0_60px_-20px_rgba(232,165,93,0.1)]'}
               z-20`}
           >
             <input
@@ -724,18 +723,18 @@ export default function Home() {
 
             {/* Idle State */}
             <div className={`transition-all duration-500 transform ${isDragging ? 'scale-95 opacity-0 blur-sm' : 'scale-100 opacity-100 blur-0'}`}>
-              <div className="w-32 h-32 md:w-40 md:h-40 bg-slate-50 rounded-[40px] flex items-center justify-center mx-auto mb-14 border border-slate-900/5 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700 shadow-sm relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[40px]" />
-                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-slate-900 relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+              <div className="w-32 h-32 md:w-40 md:h-40 bg-[#1E1E1E] rounded-2xl flex items-center justify-center mx-auto mb-14 border border-[#2A2A2A] group-hover:border-amber-500/20 transition-all duration-700 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500 group-hover:text-amber-400 transition-colors relative z-10"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               </div>
-              <h3 className="text-3xl md:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-none">Deploy Assets.</h3>
-              <p className="text-lg md:text-2xl text-slate-500 font-bold tracking-tight opacity-80">Drop files here or tap to browse</p>
+              <h3 className="text-3xl md:text-7xl font-extrabold text-zinc-100 tracking-tighter mb-8 leading-none font-[family-name:var(--font-syne)]">Deploy Assets.</h3>
+              <p className="text-lg md:text-2xl text-zinc-600 font-medium tracking-tight">Drop files here or tap to browse</p>
 
               <div className="mt-20 flex flex-wrap items-center justify-center gap-4 md:gap-12">
                 {['JPG', 'PNG', 'WEBP', 'AVIF'].map((fmt) => (
                   <div key={fmt} className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-slate-200" />
-                    <span className="text-[12px] font-black text-slate-400 uppercase tracking-[0.3em]">{fmt}</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
+                    <span className="text-[12px] font-bold text-zinc-600 uppercase tracking-[0.3em] font-mono">{fmt}</span>
                   </div>
                 ))}
               </div>
@@ -744,9 +743,9 @@ export default function Home() {
         </div>
 
         {/* Security Badge */}
-        <div className="inline-flex items-center gap-4 px-8 py-3.5 rounded-full bg-white border border-slate-900/5 shadow-lg shadow-slate-900/5 mb-48 md:mb-64">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)]" />
-          <span className="text-[12px] font-black tracking-[0.25em] text-slate-500 uppercase">
+        <div className="inline-flex items-center gap-4 px-8 py-3.5 rounded-lg bg-[#161616] border border-[#2A2A2A] mb-48 md:mb-64">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]" />
+          <span className="text-[12px] font-bold tracking-[0.25em] text-zinc-500 uppercase font-mono">
             Military-Grade AES-256 Protected • Local First
           </span>
         </div>
@@ -754,14 +753,14 @@ export default function Home() {
         {/* Options Toolbar (Visible to everyone before uploading) */}
         <div className="w-full max-w-5xl space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 mb-12 z-20 relative px-4 md:px-0">
           <div className="relative">
-            <div className="w-full grid grid-cols-1 min-[600px]:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 p-10 md:p-12 rounded-[32px] bg-white border border-slate-900/10 shadow-2xl transition-all duration-700">
+            <div className="w-full grid grid-cols-1 min-[600px]:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 p-10 md:p-12 rounded-2xl bg-[#161616] border border-[#2A2A2A] shadow-2xl shadow-black/30 transition-all duration-700">
               <div className="text-left relative">
-                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 rounded-xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-amber-500 text-black px-3 py-1.5 rounded-lg text-[10px] font-extrabold tracking-widest whitespace-nowrap z-20 shadow-2xl font-mono">STUDIO PRO ONLY</div></div>}
                 <div className="flex justify-between items-center mb-2 transition-all duration-300">
-                  <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Quality</span>
-                  <span className="text-[11px] font-black text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-900/5">{Math.round(proQuality * 100)}%</span>
+                  <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.2em] font-mono">Quality</span>
+                  <span className="text-[11px] font-bold text-zinc-200 bg-[#1E1E1E] px-3 py-1.5 rounded-lg border border-[#2A2A2A] font-mono">{Math.round(proQuality * 100)}%</span>
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 mb-5 uppercase tracking-wider">{proQuality >= 0.8 ? 'Ultra Quality' : proQuality >= 0.5 ? 'Balanced' : 'Max Saving'}</p>
+                <p className="text-[10px] font-bold text-zinc-600 mb-5 uppercase tracking-wider font-mono">{proQuality >= 0.8 ? 'Ultra Quality' : proQuality >= 0.5 ? 'Balanced' : 'Max Saving'}</p>
                 <input
                   id="quality-range"
                   name="quality-range"
@@ -772,14 +771,14 @@ export default function Home() {
                   step="0.05"
                   value={proQuality}
                   onChange={(e) => setProQuality(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-slate-900 transition-all duration-300"
+                  className="w-full h-2 bg-[#2A2A2A] rounded-full appearance-none cursor-pointer accent-amber-500 transition-all duration-300"
                   disabled={!isPro}
                 />
               </div>
 
               <div className="text-left">
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Optimization</span>
-                <div className="grid grid-cols-2 p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
+                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.2em] block mb-6 font-mono">Optimization</span>
+                <div className="grid grid-cols-2 p-1.5 gap-1.5 bg-[#0D0D0D] rounded-xl border border-[#2A2A2A]">
                   {[
                     { id: 'autopilot', label: 'AUTO', isProOnly: false },
                     { id: 'mozjpeg', label: 'MOZ', isProOnly: true },
@@ -797,12 +796,12 @@ export default function Home() {
                         hapticsImpact(ImpactStyle.Light);
                         setProEngine(eng.id as 'browser' | 'mozjpeg' | 'oxipng' | 'avif' | 'autopilot');
                       }}
-                      className={`py-3 px-1 rounded-xl text-[10px] uppercase font-black tracking-widest border transition-all duration-300 relative group
-                        ${proEngine === eng.id ? 'bg-white text-slate-900 border-slate-200 shadow-sm z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-white/50'}`}
+                      className={`py-3 px-1 rounded-lg text-[10px] uppercase font-bold tracking-widest border transition-all duration-300 relative group font-mono
+                        ${proEngine === eng.id ? 'bg-[#1E1E1E] text-amber-400 border-amber-500/30 shadow-[0_0_12px_-4px_rgba(232,165,93,0.15)] z-10' : 'bg-transparent text-zinc-600 border-transparent hover:text-zinc-300 hover:bg-white/5'}`}
                     >
                       {eng.label}
                       {!isPro && eng.isProOnly && (
-                        <div className="absolute top-0 right-0 -mt-1.5 -mr-1.5 bg-orange-500 text-white rounded-full p-1 shadow-lg flex items-center justify-center">
+                        <div className="absolute top-0 right-0 -mt-1.5 -mr-1.5 bg-amber-500 text-black rounded-full p-1 shadow-lg flex items-center justify-center">
                           <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                         </div>
                       )}
@@ -812,9 +811,9 @@ export default function Home() {
               </div>
 
               <div className="text-left relative">
-                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Format</span>
-                <div className="flex p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 rounded-xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-amber-500 text-black px-3 py-1.5 rounded-lg text-[10px] font-extrabold tracking-widest whitespace-nowrap z-20 shadow-2xl font-mono">STUDIO PRO ONLY</div></div>}
+                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.2em] block mb-6 font-mono">Format</span>
+                <div className="flex p-1.5 gap-1.5 bg-[#0D0D0D] rounded-xl border border-[#2A2A2A]">
                   {['JPG', 'WEBP'].map((fmt) => (
                     <button
                       key={fmt}
@@ -823,8 +822,8 @@ export default function Home() {
                         hapticsImpact(ImpactStyle.Light);
                         setProFormat(fmt === 'JPG' ? 'image/jpeg' : 'image/webp');
                       }}
-                      className={`flex-1 py-3 rounded-xl text-[11px] uppercase font-black tracking-widest border transition-all duration-300
-                        ${proFormat === (fmt === 'JPG' ? 'image/jpeg' : 'image/webp') ? 'bg-white text-slate-900 border-slate-200 shadow-sm z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-slate-200/50'}`}
+                      className={`flex-1 py-3 rounded-lg text-[11px] uppercase font-bold tracking-widest border transition-all duration-300 font-mono
+                        ${proFormat === (fmt === 'JPG' ? 'image/jpeg' : 'image/webp') ? 'bg-[#1E1E1E] text-amber-400 border-amber-500/30 shadow-[0_0_12px_-4px_rgba(232,165,93,0.15)] z-10' : 'bg-transparent text-zinc-600 border-transparent hover:text-zinc-300 hover:bg-white/5'}`}
                       disabled={!isPro}
                     >
                       {fmt}
@@ -834,17 +833,17 @@ export default function Home() {
               </div>
 
               <div className="text-left relative">
-                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 rounded-2xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest whitespace-nowrap z-20 shadow-2xl">STUDIO PRO ONLY</div></div>}
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-6">Archive</span>
-                <div className="flex p-1.5 gap-1.5 bg-slate-100 rounded-2xl border border-slate-900/5">
+                {!isPro && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGetPro(); } }} className="absolute inset-0 z-10 bg-transparent cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 rounded-xl" onClick={() => handleGetPro()}><div className="hidden group-hover:flex group-focus-visible:flex absolute -top-10 left-1/2 -translate-x-1/2 bg-amber-500 text-black px-3 py-1.5 rounded-lg text-[10px] font-extrabold tracking-widest whitespace-nowrap z-20 shadow-2xl font-mono">STUDIO PRO ONLY</div></div>}
+                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-[0.2em] block mb-6 font-mono">Archive</span>
+                <div className="flex p-1.5 gap-1.5 bg-[#0D0D0D] rounded-xl border border-[#2A2A2A]">
                   <button
                     aria-pressed={encryptionEnabled}
                     onClick={() => {
                       hapticsImpact(ImpactStyle.Medium);
                       setEncryptionEnabled(!encryptionEnabled);
                     }}
-                    className={`w-full py-3 rounded-xl text-[10px] uppercase font-black tracking-widest border transition-all duration-300 flex items-center justify-center gap-3
-                      ${encryptionEnabled ? 'bg-slate-900 text-white border-slate-900 shadow-xl z-10' : 'bg-transparent text-slate-400 border-transparent hover:text-slate-900 hover:bg-slate-200/50'}`}
+                    className={`w-full py-3 rounded-lg text-[10px] uppercase font-bold tracking-widest border transition-all duration-300 flex items-center justify-center gap-3 font-mono
+                      ${encryptionEnabled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_-4px_rgba(16,185,129,0.15)] z-10' : 'bg-transparent text-zinc-600 border-transparent hover:text-zinc-300 hover:bg-white/5'}`}
                     disabled={!isPro}
                   >
                     <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={encryptionEnabled ? "text-emerald-400" : ""}><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
@@ -861,12 +860,12 @@ export default function Home() {
           <div className="w-full max-w-5xl space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 mb-20 px-4 md:px-0">
 
             {/* Inbound Buffer / Queue */}
-            <div className="p-10 md:p-12 rounded-[32px] border border-slate-900/10 text-left bg-white shadow-2xl">
+            <div className="p-10 md:p-12 rounded-2xl border border-[#2A2A2A] text-left bg-[#161616] shadow-2xl shadow-black/30">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
                 <div className="flex items-center gap-5">
-                  <h4 className="text-2xl font-black text-slate-900 tracking-tighter">Active Queue</h4>
-                  <div className="px-4 py-1.5 rounded-full bg-slate-100 border border-slate-900/5">
-                    <span className="text-[11px] font-black text-slate-500 tracking-[0.2em] uppercase">
+                  <h4 className="text-2xl font-extrabold text-zinc-100 tracking-tighter font-[family-name:var(--font-syne)]">Active Queue</h4>
+                  <div className="px-4 py-1.5 rounded-lg bg-[#1E1E1E] border border-[#2A2A2A]">
+                    <span className="text-[11px] font-bold text-zinc-500 tracking-[0.2em] uppercase font-mono">
                       {files.length} {files.length === 1 ? 'OBJECT' : 'OBJECTS'}
                     </span>
                   </div>
@@ -876,7 +875,7 @@ export default function Home() {
                   {files.some(f => f.status === 'staged') && (
                     <button
                       onClick={handleStartCompression}
-                      className="flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] bg-slate-900 text-white shadow-xl hover:bg-slate-800 hover:scale-[1.02] active:scale-95"
+                      className="flex-1 md:flex-none text-[11px] font-extrabold px-5 py-3 md:px-8 md:py-4 rounded-xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] bg-amber-500 text-black shadow-lg shadow-amber-500/10 hover:bg-amber-400 hover:scale-[1.02] active:scale-95 font-[family-name:var(--font-syne)]"
                     >
                       <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                       Process Queue
@@ -885,7 +884,7 @@ export default function Home() {
                   {isPro && files.some(f => f.status === 'done') && (
                     <button
                       onClick={handleDownloadAll}
-                      className={`flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border ${encryptionEnabled ? "bg-emerald-500 text-slate-900 border-emerald-400 shadow-xl shadow-emerald-500/20 hover:bg-emerald-400" : "bg-white text-slate-900 border-slate-200 shadow-lg hover:bg-slate-50"}`}
+                      className={`flex-1 md:flex-none text-[11px] font-extrabold px-5 py-3 md:px-8 md:py-4 rounded-xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border font-[family-name:var(--font-syne)] ${encryptionEnabled ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_16px_-4px_rgba(16,185,129,0.15)] hover:bg-emerald-500/20" : "bg-[#1E1E1E] text-zinc-300 border-[#2A2A2A] hover:border-zinc-600"}`}
                     >
                       {encryptionEnabled ? "Secure Export" : "Download Archive"}
                     </button>
@@ -893,7 +892,7 @@ export default function Home() {
                   <button
                     onClick={handleClearQueue}
                     aria-label="Clear all files from queue"
-                    className="flex-1 md:flex-none text-[11px] font-black px-5 py-3 md:px-8 md:py-4 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 active:scale-95"
+                    className="flex-1 md:flex-none text-[11px] font-bold px-5 py-3 md:px-8 md:py-4 rounded-xl transition-all flex items-center justify-center gap-3 uppercase tracking-[0.2em] border border-[#2A2A2A] text-zinc-600 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/5 active:scale-95 font-mono"
                   >
                     <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
                     Clear All
@@ -914,28 +913,28 @@ export default function Home() {
                         }
                       }}
                       onClick={() => file.status === 'done' && setSelectedFileId(file.id)}
-                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl bg-slate-50/50 border border-slate-900/5 group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-slate-900/10 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50' : ''}`}
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-xl bg-[#0D0D0D] border border-[#2A2A2A] group transition-all duration-500 ${file.status === 'done' ? 'cursor-pointer hover:border-amber-500/20 hover:shadow-[0_0_20px_-8px_rgba(232,165,93,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50' : ''}`}
                     >
                       <div className="flex items-center gap-6 flex-1 min-w-0 w-full">
-                        <div className="w-16 h-16 rounded-[18px] bg-white border border-slate-900/5 flex items-center justify-center overflow-hidden flex-shrink-0 relative shadow-sm group/thumb">
+                        <div className="w-16 h-16 rounded-xl bg-[#161616] border border-[#2A2A2A] flex items-center justify-center overflow-hidden flex-shrink-0 relative group/thumb">
                           {file.compressedUrl && file.status === 'done' ? (
                             <>
                               <img src={file.compressedUrl} alt="preview" className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-700" />
-                              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                                <span className="text-[10px] font-black text-white tracking-[0.2em] uppercase">Compare</span>
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                                <span className="text-[10px] font-bold text-amber-400 tracking-[0.2em] uppercase font-mono">Compare</span>
                               </div>
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-violet-500 rounded-full border-2 border-white shadow-sm animate-pulse group-hover:opacity-0 transition-opacity" />
+                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-[#0D0D0D] shadow-[0_0_8px_rgba(232,165,93,0.4)] animate-pulse group-hover:opacity-0 transition-opacity" />
                             </>
                           ) : (
-                            <div className="w-2 h-2 rounded-full bg-slate-200 animate-pulse" />
+                            <div className="w-2 h-2 rounded-full bg-zinc-700 animate-pulse" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
-                          <p className="text-base font-black truncate text-slate-900 mb-1 tracking-tight group-hover:text-violet-600 transition-colors">{file.file.name}</p>
+                          <p className="text-base font-bold truncate text-zinc-200 mb-1 tracking-tight group-hover:text-amber-400 transition-colors font-mono">{file.file.name}</p>
                           {file.status === 'done' ? (
-                            <p className="text-[10px] text-violet-500 font-black uppercase tracking-[0.2em] animate-pulse">✨ Click to Compare</p>
+                            <p className="text-[10px] text-amber-500 font-bold uppercase tracking-[0.2em] animate-pulse font-mono">✦ Click to Compare</p>
                           ) : (
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">{formatSize(file.originalSize)} SOURCE</p>
+                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em] font-mono">{formatSize(file.originalSize)} SOURCE</p>
                           )}
                         </div>
                       </div>
@@ -943,37 +942,37 @@ export default function Home() {
                        <div className="flex items-center justify-between sm:justify-end gap-10 w-full sm:w-auto mt-4 sm:mt-0 pl-0 sm:pl-8">
                         {file.status === 'processing' && (
                           <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 border-2 border-slate-900/10 border-t-slate-900 rounded-full animate-spin" />
-                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] animate-pulse">Processing</span>
+                            <div className="w-4 h-4 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
+                            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.2em] animate-pulse font-mono">Processing</span>
                           </div>
                         )}
 
                         {file.status === 'staged' && (
                           <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                            <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Staged</span>
+                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em] font-mono">Staged</span>
                           </div>
                         )}
 
                         {file.status === 'pending' && (
                           <div className="flex items-center gap-3">
                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em]">Queued</span>
+                            <span className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.2em] font-mono">Queued</span>
                           </div>
                         )}
 
                         {file.status === 'error' && (
                           <div className="flex items-center gap-3">
                             <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                            <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">Failed</span>
+                            <span className="text-[10px] font-bold text-red-400 uppercase tracking-[0.2em] font-mono">Failed</span>
                           </div>
                         )}
 
                         {file.status === 'done' && (
                           <>
                             <div className="text-right">
-                              <p className="text-sm font-black text-emerald-500 mb-0.5 tracking-tight">-{file.savings}%</p>
-                              <p className="text-[10px] font-black text-slate-400 tracking-[0.1em] uppercase">{formatSize(file.compressedSize || 0)}</p>
+                              <p className="text-sm font-extrabold text-emerald-400 mb-0.5 tracking-tight font-mono">-{file.savings}%</p>
+                              <p className="text-[10px] font-bold text-zinc-600 tracking-[0.1em] uppercase font-mono">{formatSize(file.compressedSize || 0)}</p>
                             </div>
                             <div className="flex items-center gap-3">
                               <a
@@ -982,7 +981,7 @@ export default function Home() {
                                 onClick={(e) => e.stopPropagation()}
                                 aria-label={`Download compressed ${file.file.name}`}
                                 title={`Download compressed ${file.file.name}`}
-                                className="p-3.5 bg-white border border-slate-900/5 hover:border-slate-900/10 text-slate-400 hover:text-slate-900 rounded-xl transition-all shadow-sm hover:shadow-md"
+                                className="p-3.5 bg-[#161616] border border-[#2A2A2A] hover:border-amber-500/30 text-zinc-500 hover:text-amber-400 rounded-xl transition-all"
                               >
                                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
                               </a>
@@ -993,7 +992,7 @@ export default function Home() {
                         <button
                           onClick={(e) => { e.stopPropagation(); handleRemoveFile(file.id); }}
                           aria-label={`Remove ${file.file.name} from queue`}
-                          className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all ml-2 flex-shrink-0"
+                          className="p-2.5 text-zinc-700 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all ml-2 flex-shrink-0"
                         >
                           <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
@@ -1002,11 +1001,11 @@ export default function Home() {
 
                     {/* Processing Console */}
                     {(file.status === 'processing' || (file.logs && file.logs.length > 0 && file.status !== 'staged')) && (
-                      <div className="w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 to-black rounded-2xl p-4 md:p-6 overflow-hidden flex flex-col shadow-[inset_0_2px_15px_rgba(0,0,0,0.5)] border border-slate-900/10">
+                      <div className="w-full bg-black rounded-xl p-4 md:p-6 overflow-hidden flex flex-col shadow-[inset_0_2px_15px_rgba(0,0,0,0.5)] border border-[#1E1E1E]">
                         <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/5">
                           <div className="flex items-center gap-3">
                             <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5" /><line x1="12" x2="19" y2="19" /></svg>
-                            <span className="text-[11px] font-mono font-black text-zinc-500 tracking-[0.2em] uppercase">Engine Telemetry</span>
+                            <span className="text-[11px] font-mono font-bold text-zinc-600 tracking-[0.2em] uppercase">Engine Telemetry</span>
                           </div>
                           {file.status === 'processing' && (
                             <div className="flex gap-1.5 items-center">
@@ -1047,24 +1046,24 @@ export default function Home() {
           {!isPro && (
             <section className="max-w-5xl mx-auto px-4 md:px-0">
               <div className="text-center mb-16">
-                <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter mb-6">Elevate Compression.</h2>
-                <p className="text-lg md:text-xl text-slate-500 font-bold max-w-2xl mx-auto tracking-tight">Unlock professional WASM engines and secure batch processing for high-volume workflows.</p>
+                <h2 className="text-4xl md:text-6xl font-extrabold text-zinc-100 tracking-tighter mb-6 font-[family-name:var(--font-syne)]">Elevate Compression.</h2>
+                <p className="text-lg md:text-xl text-zinc-500 font-medium max-w-2xl mx-auto tracking-tight">Unlock professional WASM engines and secure batch processing for high-volume workflows.</p>
               </div>
 
-              <div className="relative overflow-hidden rounded-[32px] border border-slate-900/10 bg-white shadow-2xl">
-                <div className="flex border-b border-slate-900/5 bg-slate-50/50">
-                  <div className="flex-1 p-4 md:p-8 text-left text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Capability</div>
-                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Standard</div>
-                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-black text-orange-600 uppercase tracking-[0.2em] bg-orange-500/5">Studio Pro</div>
+              <div className="relative overflow-hidden rounded-2xl border border-[#2A2A2A] bg-[#161616] shadow-2xl shadow-black/30">
+                <div className="flex border-b border-[#2A2A2A] bg-[#1E1E1E]">
+                  <div className="flex-1 p-4 md:p-8 text-left text-[10px] md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.2em] font-mono">Capability</div>
+                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-bold text-zinc-600 uppercase tracking-[0.2em] font-mono">Standard</div>
+                  <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-[11px] font-bold text-amber-500 uppercase tracking-[0.2em] bg-amber-500/5 font-mono">Studio Pro</div>
                 </div>
                 {BENEFITS.map((row, i) => (
-                  <div key={i} className="flex border-b border-slate-900/5 last:border-0 hover:bg-slate-50/50 transition-colors group">
-                    <div className="flex-1 p-4 md:p-8 text-left text-xs md:text-base font-bold text-slate-900 flex items-center gap-4">
+                  <div key={i} className="flex border-b border-[#2A2A2A] last:border-0 hover:bg-white/[0.02] transition-colors group">
+                    <div className="flex-1 p-4 md:p-8 text-left text-xs md:text-base font-bold text-zinc-200 flex items-center gap-4">
                       <span className="text-xl grayscale group-hover:grayscale-0 transition-all">{row.icon}</span>
                       {row.f}
                     </div>
-                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-bold text-slate-500">{row.s}</div>
-                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-black text-slate-900 bg-orange-500/[0.02]">{row.p}</div>
+                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-medium text-zinc-500 font-mono">{row.s}</div>
+                    <div className="w-20 md:w-32 p-4 md:p-8 text-center text-[10px] md:text-sm font-bold text-zinc-200 bg-amber-500/[0.02] font-mono">{row.p}</div>
                   </div>
                 ))}
               </div>
@@ -1074,9 +1073,9 @@ export default function Home() {
           {/* Engine Technical Specs */}
           <section className="max-w-6xl mx-auto px-4 md:px-0">
             <div className="flex items-center gap-6 mb-20 justify-center">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-900/10" />
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Technical Architecture</span>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-900/10" />
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#2A2A2A]" />
+              <span className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.3em] font-mono">Technical Architecture</span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#2A2A2A]" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -1103,16 +1102,16 @@ export default function Home() {
                   color: 'yellow'
                 }
               ].map((spec, i) => (
-                <div key={i} className="p-10 rounded-[32px] border border-slate-900/5 bg-white text-left hover:border-slate-900/10 hover:shadow-2xl transition-all duration-500">
+                <div key={i} className="p-10 rounded-2xl border border-[#2A2A2A] bg-[#161616] text-left hover:border-zinc-600 hover:shadow-[0_0_40px_-10px_rgba(232,165,93,0.05)] transition-all duration-500">
                   <div className="flex items-center justify-between mb-8">
-                    <span className={`text-[10px] font-black px-3 py-1 rounded-full ${spec.tier === 'Studio Pro' ? 'bg-orange-500/10 text-orange-600' : 'bg-slate-100 text-slate-500'} uppercase tracking-widest`}>
+                    <span className={`text-[10px] font-bold px-3 py-1 rounded-lg ${spec.tier === 'Studio Pro' ? 'bg-amber-500/10 text-amber-400' : 'bg-zinc-800 text-zinc-500'} uppercase tracking-widest font-mono`}>
                       {spec.tier}
                     </span>
-                    <div className={`w-2 h-2 rounded-full ${spec.tier === 'Studio Pro' ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.6)]' : 'bg-slate-300'}`} />
+                    <div className={`w-2 h-2 rounded-full ${spec.tier === 'Studio Pro' ? 'bg-amber-500 shadow-[0_0_8px_rgba(232,165,93,0.4)]' : 'bg-zinc-700'}`} />
                   </div>
-                  <h5 className="text-xl font-black text-slate-900 mb-2 tracking-tight">{spec.name}</h5>
-                  <p className="text-[10px] font-black text-slate-400 mb-6 tracking-[0.2em] uppercase">{spec.algo}</p>
-                  <p className="text-base text-slate-500 font-bold leading-relaxed opacity-80">
+                  <h5 className="text-xl font-extrabold text-zinc-100 mb-2 tracking-tight font-[family-name:var(--font-syne)]">{spec.name}</h5>
+                  <p className="text-[10px] font-bold text-zinc-600 mb-6 tracking-[0.2em] uppercase font-mono">{spec.algo}</p>
+                  <p className="text-base text-zinc-500 font-medium leading-relaxed">
                     {spec.desc}
                   </p>
                 </div>
@@ -1123,16 +1122,16 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-6xl mx-auto px-6 py-20 border-t border-slate-900/5 mt-auto flex flex-col md:flex-row items-center justify-between text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
+      <footer className="w-full max-w-6xl mx-auto px-6 py-20 border-t border-[#2A2A2A] mt-auto flex flex-col md:flex-row items-center justify-between text-zinc-600 text-[11px] font-bold uppercase tracking-[0.2em] font-mono">
         <p>© 2026 ZeroByteMode. Private by design.</p>
         <div className="flex gap-10 mt-8 md:mt-0">
-          <a href="https://docs.zerobytemode.com" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 transition-colors">Documentation</a>
-          <a href="https://www.zerobytemode.com/privacy" className="hover:text-slate-900 transition-colors">Privacy</a>
-          <a href="https://www.zerobytemode.com/terms" className="hover:text-slate-900 transition-colors">Terms</a>
+          <a href="https://docs.zerobytemode.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Documentation</a>
+          <a href="https://www.zerobytemode.com/privacy" className="hover:text-amber-400 transition-colors">Privacy</a>
+          <a href="https://www.zerobytemode.com/terms" className="hover:text-amber-400 transition-colors">Terms</a>
           <button
             onClick={() => setShowSupportModal(true)}
             aria-label="Open support modal"
-            className="hover:text-slate-900 transition-colors"
+            className="hover:text-amber-400 transition-colors"
           >
             Support
           </button>
@@ -1141,41 +1140,41 @@ export default function Home() {
 
       {/* Comparison Workspace Modal */}
       {selectedFileId && (
-        <div role="dialog" aria-modal="true" aria-labelledby="inspector-modal-title" className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-10 bg-white/95 backdrop-blur-3xl animate-in zoom-in-95 duration-500">
+        <div role="dialog" aria-modal="true" aria-labelledby="inspector-modal-title" className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-10 bg-black/95 backdrop-blur-3xl animate-in zoom-in-95 duration-500">
           <div className="w-full h-full max-w-6xl flex flex-col relative">
             <header className="flex items-center justify-between mb-10">
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => setSelectedFileId(null)}
                   aria-label="Close inspector"
-                  className="p-3 bg-slate-100 hover:bg-slate-200 border border-slate-900/5 rounded-2xl text-slate-900 transition-all shadow-sm"
+                  className="p-3 bg-[#161616] hover:bg-[#1E1E1E] border border-[#2A2A2A] rounded-xl text-zinc-300 transition-all"
                 >
                   <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
                 <div>
-                  <h2 id="inspector-modal-title" className="text-2xl font-black text-slate-900 tracking-tighter">Studio Inspector</h2>
-                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{selectedFile?.file.name}</p>
+                  <h2 id="inspector-modal-title" className="text-2xl font-extrabold text-zinc-100 tracking-tighter font-[family-name:var(--font-syne)]">Studio Inspector</h2>
+                  <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-[0.2em] font-mono">{selectedFile?.file.name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-full">
-                  <span className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em]">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-lg">
+                  <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-[0.2em] font-mono">
                     -{selectedFile?.savings}% REDUCTION
                   </span>
                 </div>
                 <a
                   href={selectedFile?.compressedUrl}
                   download={`ZBM-${selectedFile?.file.name}`}
-                  className="bg-slate-900 text-white px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl active:scale-95"
+                  className="bg-amber-500 text-black px-8 py-3 rounded-xl text-[11px] font-extrabold uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/10 active:scale-95 font-[family-name:var(--font-syne)]"
                 >
                   Download
                 </a>
               </div>
             </header>
 
-            <div className="flex-1 min-h-0 bg-slate-100 rounded-[40px] border border-slate-900/10 overflow-hidden relative shadow-2xl">
+            <div className="flex-1 min-h-0 bg-[#0D0D0D] rounded-2xl border border-[#2A2A2A] overflow-hidden relative shadow-2xl">
               <div className="absolute inset-0 flex items-center justify-center p-4 md:p-12">
-                <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-[url('/grid.svg')] bg-repeat border border-slate-900/5 shadow-inner">
+                <div className="relative w-full h-full rounded-xl overflow-hidden bg-[url('/grid.svg')] bg-repeat border border-[#2A2A2A] shadow-inner">
 
                   {/* Original (Left) */}
                   <div className="absolute inset-0">
@@ -1186,14 +1185,14 @@ export default function Home() {
                         className="w-full h-full object-contain"
                       />
                     )}
-                    <div className="absolute top-8 left-8 bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-900/10 shadow-sm">
-                      <span className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">SOURCE</span>
+                    <div className="absolute top-8 left-8 bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg border border-[#2A2A2A]">
+                      <span className="text-[11px] font-bold text-zinc-300 uppercase tracking-[0.2em] font-mono">SOURCE</span>
                     </div>
                   </div>
 
                   {/* Compressed (Right) */}
                   <div
-                    className="absolute inset-0 overflow-hidden border-l border-slate-900/20"
+                    className="absolute inset-0 overflow-hidden border-l border-amber-500/30"
                     style={{ clipPath: `inset(0 0 0 ${compareSliderPos}%)` }}
                   >
                     <img
@@ -1201,8 +1200,8 @@ export default function Home() {
                       alt="compressed"
                       className="w-full h-full object-contain"
                     />
-                    <div className="absolute top-8 right-8 bg-emerald-500/10 backdrop-blur-md px-4 py-2 rounded-xl border border-emerald-500/30 shadow-sm">
-                      <span className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.2em]">{isPro ? proEngine.toUpperCase() : 'WASM'} OUTPUT</span>
+                    <div className="absolute top-8 right-8 bg-amber-500/10 backdrop-blur-md px-4 py-2 rounded-lg border border-amber-500/20">
+                      <span className="text-[11px] font-bold text-amber-400 uppercase tracking-[0.2em] font-mono">{isPro ? proEngine.toUpperCase() : 'WASM'} OUTPUT</span>
                     </div>
                   </div>
 
@@ -1219,11 +1218,11 @@ export default function Home() {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-10"
                   />
                   <div
-                    className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,1)] z-20 pointer-events-none"
+                    className="absolute top-0 bottom-0 w-0.5 bg-amber-500 cursor-ew-resize flex items-center justify-center shadow-[0_0_20px_rgba(232,165,93,0.3)] z-20 pointer-events-none"
                     style={{ left: `calc(${compareSliderPos}% - 0.5px)` }}
                   >
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-100">
-                      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 8-4 4-4 4M6 8l-4 4 4 4" /></svg>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-[#161616] rounded-full flex items-center justify-center shadow-2xl border-2 border-amber-500/50">
+                      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8A55D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 8-4 4-4 4M6 8l-4 4 4 4" /></svg>
                     </div>
                   </div>
                 </div>
@@ -1232,15 +1231,15 @@ export default function Home() {
             <footer className="mt-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex gap-16">
                 <div>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Input Payload</span>
-                  <span className="text-lg font-black text-slate-900">{formatSize(selectedFile?.originalSize || 0)}</span>
+                  <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] block mb-2 font-mono">Input Payload</span>
+                  <span className="text-lg font-extrabold text-zinc-200 font-mono">{formatSize(selectedFile?.originalSize || 0)}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Studio Output</span>
-                  <span className="text-lg font-black text-emerald-500">{formatSize(selectedFile?.compressedSize || 0)}</span>
+                  <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] block mb-2 font-mono">Studio Output</span>
+                  <span className="text-lg font-extrabold text-emerald-400 font-mono">{formatSize(selectedFile?.compressedSize || 0)}</span>
                 </div>
               </div>
-              <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] opacity-60">100% Sovereign Architecture • Zero Data Leaks</p>
+              <p className="text-[11px] font-bold text-zinc-700 uppercase tracking-[0.2em] font-mono">100% Sovereign Architecture • Zero Data Leaks</p>
             </footer>
           </div>
         </div>
@@ -1277,52 +1276,52 @@ export default function Home() {
 
       {/* Stripe Loading Overlay */}
       {isStripeLoading && (
-        <div role="status" aria-live="polite" aria-label="Initializing secure checkout" className="fixed inset-0 z-[130] flex items-center justify-center bg-white/60 backdrop-blur-2xl animate-in fade-in duration-500">
+        <div role="status" aria-live="polite" aria-label="Initializing secure checkout" className="fixed inset-0 z-[130] flex items-center justify-center bg-black/80 backdrop-blur-2xl animate-in fade-in duration-500">
           <div className="flex flex-col items-center">
-            <div className="w-24 h-24 p-4 bg-white rounded-3xl shadow-2xl border border-slate-900/5 mb-8 relative">
-              <div className="absolute inset-0 border-4 border-violet-500/20 border-t-violet-500 rounded-3xl animate-spin" />
+            <div className="w-24 h-24 p-4 bg-[#161616] rounded-2xl shadow-2xl border border-[#2A2A2A] mb-8 relative">
+              <div className="absolute inset-0 border-4 border-amber-500/20 border-t-amber-500 rounded-2xl animate-spin" />
               <Image src="/logo.svg" alt="Logo" width={64} height={64} className="w-full h-full relative z-10" />
             </div>
-            <p className="text-xs font-black text-slate-900 uppercase tracking-[0.3em] animate-pulse">Initializing Secure Gateway</p>
+            <p className="text-xs font-bold text-amber-400 uppercase tracking-[0.3em] animate-pulse font-mono">Initializing Secure Gateway</p>
           </div>
         </div>
       )}
 
       {/* iOS Install Instructions */}
       {showIOSInstallInstructions && (
-        <div role="dialog" aria-modal="true" aria-labelledby="ios-install-title" className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="w-full max-w-sm glass-panel p-10 border border-white/10 relative shadow-2xl rounded-3xl bg-zinc-950 text-center">
+        <div role="dialog" aria-modal="true" aria-labelledby="ios-install-title" className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="w-full max-w-sm p-10 border border-[#2A2A2A] relative shadow-2xl rounded-xl bg-[#161616] text-center">
             <button
               onClick={() => setShowIOSInstallInstructions(false)}
               aria-label="Close instructions"
-              className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
+              className="absolute top-6 right-6 text-zinc-500 hover:text-zinc-200 transition-colors"
             >
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
 
-            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
+            <div className="w-16 h-16 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-8 border border-blue-500/20">
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
             </div>
 
-            <h2 id="ios-install-title" className="text-2xl font-bold mb-4 tracking-tight text-white">Install on iPhone</h2>
+            <h2 id="ios-install-title" className="text-2xl font-bold mb-4 tracking-tight text-zinc-100 font-[family-name:var(--font-syne)]">Install on iPhone</h2>
             <div className="space-y-6 text-left mb-10">
               <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">1</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Tap the <span className="text-white font-bold">Share icon</span> in the bottom toolbar of Safari.</p>
+                <div className="w-6 h-6 rounded-lg bg-white/5 border border-[#2A2A2A] flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 mt-0.5 font-mono">1</div>
+                <p className="text-zinc-400 text-sm leading-relaxed">Tap the <span className="text-zinc-200 font-bold">Share icon</span> in the bottom toolbar of Safari.</p>
               </div>
               <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">2</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Scroll down and select <span className="text-white font-bold">&quot;Add to Home Screen&quot;</span>.</p>
+                <div className="w-6 h-6 rounded-lg bg-white/5 border border-[#2A2A2A] flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 mt-0.5 font-mono">2</div>
+                <p className="text-zinc-400 text-sm leading-relaxed">Scroll down and select <span className="text-zinc-200 font-bold">&quot;Add to Home Screen&quot;</span>.</p>
               </div>
               <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0 mt-0.5">3</div>
-                <p className="text-zinc-300 text-sm leading-relaxed">Tap <span className="text-white font-bold">Add</span> in the top right corner.</p>
+                <div className="w-6 h-6 rounded-lg bg-white/5 border border-[#2A2A2A] flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 mt-0.5 font-mono">3</div>
+                <p className="text-zinc-400 text-sm leading-relaxed">Tap <span className="text-zinc-200 font-bold">Add</span> in the top right corner.</p>
               </div>
             </div>
 
             <button
               onClick={() => setShowIOSInstallInstructions(false)}
-              className="w-full h-12 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors"
+              className="w-full h-12 bg-amber-500 text-black font-bold rounded-lg hover:bg-amber-400 transition-colors font-[family-name:var(--font-syne)]"
             >
               Got it
             </button>

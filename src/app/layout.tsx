@@ -1,17 +1,28 @@
 import type { Metadata } from "next";
 import type { Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const syne = localFont({
+  variable: "--font-syne",
+  src: [
+    { path: "../../public/fonts/syne-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/syne-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/syne-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/syne-latin-700-normal.woff2", weight: "700", style: "normal" },
+    { path: "../../public/fonts/syne-latin-800-normal.woff2", weight: "800", style: "normal" },
+  ],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const jetbrainsMono = localFont({
+  variable: "--font-jetbrains",
+  src: [
+    { path: "../../public/fonts/jetbrains-mono-latin-400-normal.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/jetbrains-mono-latin-500-normal.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/jetbrains-mono-latin-600-normal.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/jetbrains-mono-latin-700-normal.woff2", weight: "700", style: "normal" },
+  ],
 });
 
 export const metadata: Metadata = {
@@ -53,7 +64,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f8fafc",
+  themeColor: "#0D0D0D",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -105,7 +116,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground selection:bg-white/20`}
+        className={`${syne.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-background text-foreground selection:bg-amber-500/20`}
       >
         {children}
       </body>
