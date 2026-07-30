@@ -7,7 +7,7 @@ const PNG = Buffer.from(
 
 async function compressWith(page: import("@playwright/test").Page, engine: string, filename: string) {
   await page.goto("/");
-  await page.getByLabel("Engine").selectOption({ label: engine });
+  await page.getByRole("combobox").nth(1).selectOption({ label: engine });
   await page.locator('input[type="file"]').setInputFiles({
     name: filename,
     mimeType: "image/png",
