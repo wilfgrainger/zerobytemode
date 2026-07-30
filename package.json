@@ -14,11 +14,12 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
+    "repo:check": "node scripts/validate-repository.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "playwright test",
     "test:codecs": "playwright test tests/engines.spec.ts",
-    "check": "npm run lint && npm run typecheck && npm run build && npm run test"
+    "check": "npm run repo:check && npm run lint && npm run typecheck && npm run build && npm run test"
   },
   "dependencies": {
     "@jsquash/avif": "^2.1.1",
