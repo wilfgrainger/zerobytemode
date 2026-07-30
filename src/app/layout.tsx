@@ -1,30 +1,26 @@
-import type { Metadata } from "next";
-import type { Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.zerobytemode.com'), // Replace with actual domain
-  title: "Free Image Compressor & Optimizer | ZeroByteMode",
-  description: "Make it smaller. ZeroByteMode is a secure, local-first file and image compression studio. Reduce photo sizes by up to 80% with next-gen WASM algorithms directly in your browser. No server uploads.",
-  keywords: ["image compressor", "file compression", "reduce photo size", "compress jpeg online", "optimize png", "bulk image compression", "make image smaller", "secure local image compressor", "webp compressor", "avif compressor", "zero byte mode", "ZBM"],
-  alternates: {
-    canonical: 'https://www.zerobytemode.com',
-  },
+  metadataBase: new URL("https://www.zerobytemode.com"),
+  title: "ZeroByteMode | Open-source local image compressor",
+  description:
+    "Batch-compress JPEG, PNG, WebP and AVIF locally in your browser with open WebAssembly codecs. No uploads, accounts, analytics or paid tier.",
+  keywords: [
+    "open source image compressor",
+    "local image compression",
+    "browser image optimizer",
+    "compress jpeg",
+    "optimize png",
+    "webp compressor",
+    "avif compressor",
+    "batch image compression",
+  ],
+  alternates: { canonical: "https://www.zerobytemode.com" },
   openGraph: {
-    title: "ZeroByteMode: Secure Image Compressor",
-    description: "The world's most secure, local-first image compression studio. Reduce file sizes instantly.",
+    title: "ZeroByteMode | No uploads. No paywall.",
+    description:
+      "Open-source batch image compression that runs entirely in your browser.",
     url: "https://www.zerobytemode.com",
     siteName: "ZeroByteMode",
     images: [
@@ -32,22 +28,22 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "ZeroByteMode Compression Studio",
+        alt: "ZeroByteMode local image compressor",
       },
     ],
-    locale: "en_US",
+    locale: "en_GB",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ZeroByteMode: Secure Image Compressor",
-    description: "Ultimate local image compression right in your browser.",
+    title: "ZeroByteMode | Open-source local image compressor",
+    description: "Compress full image batches locally. No accounts or paid tier.",
     images: ["/opengraph-image.png"],
   },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "ZeroByteMode",
   },
 };
@@ -59,56 +55,38 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  // Structured Data (JSON-LD) for SEO
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "ZeroByteMode",
-    "url": "https://www.zerobytemode.com",
-    "description": "Secure, local-first image and file compression studio.",
-    "applicationCategory": "MultimediaApplication",
-    "operatingSystem": "All",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
-  };
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "ZeroByteMode",
+  url: "https://www.zerobytemode.com",
+  description:
+    "Open-source, local-only image compression using browser Web Workers and WebAssembly codecs.",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "Any modern browser",
+  isAccessibleForFree: true,
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "GBP",
+  },
+  codeRepository: "https://github.com/wilfgrainger/zerobytemode",
+};
 
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <head>
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.workers.dev https://www.google-analytics.com; worker-src 'self' blob:; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://buy.stripe.com;"
+          content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'"
         />
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-5K3SJRJBPD"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-5K3SJRJBPD');
-          `}
-        </Script>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground selection:bg-white/20`}
-      >
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
