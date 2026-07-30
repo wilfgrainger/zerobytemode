@@ -1,37 +1,43 @@
-# ZeroByteMode | System Requirements
+# ZeroByteMode requirements
 
-## 1. Functional Requirements
+## Product requirements
 
-### 1.1 UI / UX Features
-- **File Upload:** Application must accept drag-and-drop or explicit file selection for common image formats (JPEG, PNG, WEBP, AVIF).
-- **Haptic Feedback:** The app must trigger native capacitor haptics (Light, Medium, Heavy) when interacting with core elements if run in a portable/native setting.
-- **PWA Installation:** Offer a native installation prompt for supporting browsers and iOS specific installation instructions for Safari users.
+1. The application must process supported images entirely in the browser.
+2. Every compression engine, format control, batch feature and ZIP download must be available without payment or identity.
+3. Users must be able to add more than three images to one queue.
+4. The application must support JPEG, PNG, WebP and AVIF input where the browser can decode it.
+5. Auto-pilot must select a sensible codec from the file and requested output.
+6. A failed WASM codec should fall back safely where a browser encoder is available.
+7. A same-format result larger than the original should retain the original file.
+8. Users must be able to preview, compare, remove and download completed items.
+9. The interface must work with keyboard navigation and at narrow mobile widths.
 
-### 1.2 Compression Tiers
+## Local-only requirements
 
-**Free Tier Restrictions:**
-- Max concurrent files: 3 per iteration.
-- Optimization engines: Standard Browser Native / Auto (WebP conversion for PNGs). 
-- Quality setting: Locked at 0.65 (`65%`).
-- Advanced ZIP encryption disabled.
+The shipped application must not include:
 
-**Pro Tier ("Studio Pro") Specifications:**
-- Limitless batch processing queue mapping.
-- Adjustable compression range input (10% to 100%).
-- Engine Selectivity: Choice between Auto, MozJPEG, OxiPNG, and AVIF.
-- "ZIP All" feature wrapping all compressed files safely.
-- AES-256 local client side encryption standard for ZIP exports.
+- sign-in, registration or magic links;
+- subscription, checkout, billing or feature-entitlement logic;
+- Stripe, Resend or analytics scripts;
+- an application Worker, database or API;
+- remote image processing;
+- account cookies or browser identity storage;
+- a hidden or disabled paid feature tier.
 
-### 1.3 Billing & Subscription Requirements
-- System must redirect customers correctly to a Stripe Checkout URL injected with their verified email prefix.
-- "Manage Subscription" capability via Stripe Customer Portal.
-- Pro features must conditionally activate purely upon detecting valid session authorization or `zbm_pro_tier` cookie state without server rendering logic.
+Ordinary requests for static application assets are allowed. Explicit links to the public source repository are allowed, but the application must not contact third-party services automatically.
 
-### 1.4 Worker Core Logic
-- A Dedicated Web Worker MUST separate the UI thread from the encoding loops to avoid freezing the browser.
-- Fail-safes: If an optimized blob size is larger than the `originalSize`, the system must revert to providing the original uncompressed blob.
+## Engineering requirements
 
-## 2. Non-Functional Requirements
-- **Performance:** App must load near instantaneously (<1.5s LCP) relying entirely on edge network CDNs (Netlify / Pages). 
-- **Privacy Compliance:** Given no data leaves the browser, system maintains innate GDPR/CCPA compliance for image data handling.
-- **Responsiveness:** Support viewports from 320px (Mobile) up to large Desktop Ultra-Wide displays, with a modular floating dock or side-panel component adjustments.
+- Static export through Next.js `output: "export"`.
+- Compression in a dedicated Web Worker.
+- Locked npm dependencies and Node.js 22.
+- ESLint, TypeScript, static build and Playwright checks.
+- Tests for the no-paywall and local-only boundaries.
+- No high or critical dependency audit findings at release.
+
+## Open-source requirements
+
+- MIT licence included at repository root.
+- README explains local development, architecture and privacy.
+- Contributions must preserve the single open edition.
+- Brand assets may be replaced by forks; the licence must not be presented as an endorsement of a fork.
