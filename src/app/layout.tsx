@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.zerobytemode.com").replace(/\/$/, "");
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.zerobytemode.com"),
+  metadataBase: new URL(siteUrl),
   title: "ZeroByteMode | Open-source local image compressor",
   description:
     "Batch-compress JPEG, PNG, WebP and AVIF locally in your browser with open WebAssembly codecs. No uploads, accounts, analytics or paid tier.",
@@ -16,16 +19,16 @@ export const metadata: Metadata = {
     "avif compressor",
     "batch image compression",
   ],
-  alternates: { canonical: "https://www.zerobytemode.com" },
+  alternates: { canonical: siteUrl },
   openGraph: {
     title: "ZeroByteMode | No uploads. No paywall.",
     description:
       "Open-source batch image compression that runs entirely in your browser.",
-    url: "https://www.zerobytemode.com",
+    url: siteUrl,
     siteName: "ZeroByteMode",
     images: [
       {
-        url: "/opengraph-image.png",
+        url: `${siteUrl}/opengraph-image.png`,
         width: 1200,
         height: 630,
         alt: "ZeroByteMode local image compressor",
@@ -38,9 +41,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ZeroByteMode | Open-source local image compressor",
     description: "Compress full image batches locally. No accounts or paid tier.",
-    images: ["/opengraph-image.png"],
+    images: [`${siteUrl}/opengraph-image.png`],
   },
-  manifest: "/manifest.json",
+  manifest: `${basePath}/manifest.json`,
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -59,7 +62,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "ZeroByteMode",
-  url: "https://www.zerobytemode.com",
+  url: siteUrl,
   description:
     "Open-source, local-only image compression using browser Web Workers and WebAssembly codecs.",
   applicationCategory: "MultimediaApplication",
