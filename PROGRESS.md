@@ -8,7 +8,7 @@ Make ZeroByteMode a genuinely open-source, local-only image compressor: one comp
 
 ## Current candidate
 
-Draft PR `#49`, branch `agent/open-source-local-only`, is based on released `main` commit `d6a05a04e3c714860cb9cacffc3496be19eb7085`.
+PR `#49`, branch `agent/open-source-local-only`, is based on released `main` commit `d6a05a04e3c714860cb9cacffc3496be19eb7085`.
 
 ## Delivered in the candidate
 
@@ -23,6 +23,7 @@ Draft PR `#49`, branch `agent/open-source-local-only`, is based on released `mai
 - Replaced architecture and requirements documents with the local-only model.
 - Replaced entitlement tests with open-edition, no-network, no-storage and codec checks.
 - Added a permanent CI gate and repository invariant validator.
+- Added deployable static security headers and production-artifact browser testing.
 
 ## Team decision
 
@@ -33,26 +34,32 @@ Draft PR `#49`, branch `agent/open-source-local-only`, is based on released `mai
 - **Jian-Yang:** do not claim local privacy while loading analytics or validating subscriptions remotely.
 - **Cave Pony:** files in, smaller files out. Everything else must justify itself.
 
-## Validation state
+## Validation evidence
 
-Initial PR workflow run `#1` stopped at the high-severity dependency audit. It identified outdated Next.js and transitive Babel, glob, YAML, PostCSS and Sharp packages before any application checks ran.
-
-The candidate now uses Next.js `16.2.12`, the matching ESLint configuration and explicit audited transitive overrides. A one-shot branch workflow regenerated `package-lock.json`, committed the reduced lockfile and removed itself.
-
-The next exact-head workflow must prove:
+Exact candidate `0038c59be90e12a23b8f099c051059ac3ace04b3` passed permanent workflow run `#15` (`30554440964`):
 
 - locked Node 22 installation;
 - zero high or critical dependency findings;
-- repository architecture invariants;
-- patch whitespace, ESLint and TypeScript;
-- static export and exact-artifact assertions;
-- Chromium browser, codec and mobile tests;
-- no external application requests, account cookies or browser identity storage;
-- no account, checkout, subscription or paid feature surface.
+- repository one-edition and local-only invariants;
+- complete PR whitespace comparison;
+- ESLint and TypeScript;
+- static Next.js export;
+- exact HTML and `_headers` assertions;
+- production static-server Chromium tests;
+- a queue larger than the former free limit;
+- Auto-pilot, OxiPNG and AVIF/fallback compression paths;
+- all codec, format and quality controls available without entitlement;
+- no external application requests, account cookies or application-owned browser identity storage;
+- no account, checkout, subscription or paid feature surface;
+- mobile overflow and desktop/mobile screenshot evidence.
+
+The review artefact `open-local-release-evidence` has digest `sha256:252658f702b57d50059a1f35d0d6f19f7a8dd2902f2fa9b435a6f2276a59a999`.
+
+Desktop and 390px mobile screenshots were manually inspected. The product hierarchy is clear, no development overlay is present, and no clipping, horizontal overflow, inaccessible control or misleading paid-state residue was found.
 
 ## Release state
 
-PR `#49` remains a draft. `main` and production are unchanged. The PR must not be marked ready or merged until the exact head passes the complete release gate and responsive evidence is inspected.
+`main` and production are unchanged. This documentation-only handoff commit must pass the same permanent workflow before PR `#49` is marked ready. The PR remains unmerged unless the owner explicitly approves release.
 
 ## Rollback
 
@@ -60,4 +67,4 @@ Before merge, close the PR or abandon the branch. After a squash merge, revert t
 
 ## Next highest-value action
 
-Run the permanent exact-head workflow on the owner-authored handoff commit, fix validated findings only, then inspect the desktop and mobile evidence before marking PR `#49` ready.
+Confirm the final documentation-only exact-head workflow is green, update PR `#49` with the final evidence and mark it ready for owner review.
