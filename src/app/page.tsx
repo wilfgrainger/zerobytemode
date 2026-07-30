@@ -49,11 +49,6 @@ interface WorkerMessage {
   engineUsed?: string;
 }
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
-
 const FORMAT_OPTIONS: Array<{ value: OutputFormat; label: string; hint: string }> = [
   { value: "auto", label: "Auto", hint: "Best engine for each source" },
   { value: "image/jpeg", label: "JPEG", hint: "Compatible photographic output" },
@@ -115,8 +110,6 @@ export default function Home() {
   const [engine, setEngine] = useState<CompressionEngine>("autopilot");
   const [processing, setProcessing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -178,29 +171,6 @@ export default function Home() {
         URL.revokeObjectURL(item.originalUrl);
         if (item.outputUrl) URL.revokeObjectURL(item.outputUrl);
       }
-    };
-  }, []);
-
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
-    }
-
-    const onInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setInstallPrompt(event as BeforeInstallPromptEvent);
-    };
-    const onInstalled = () => {
-      setInstalled(true);
-      setInstallPrompt(null);
-    };
-
-    window.addEventListener("beforeinstallprompt", onInstallPrompt);
-    window.addEventListener("appinstalled", onInstalled);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onInstallPrompt);
-      window.removeEventListener("appinstalled", onInstalled);
     };
   }, []);
 
@@ -351,13 +321,6 @@ export default function Home() {
     window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
   };
 
-  const installApp = async () => {
-    if (!installPrompt) return;
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-    if (choice.outcome === "accepted") setInstallPrompt(null);
-  };
-
   return (
     <main className="min-h-screen overflow-hidden bg-slate-50 text-slate-950">
       <div className="pointer-events-none fixed inset-0 -z-0">
@@ -380,25 +343,14 @@ export default function Home() {
             </span>
           </a>
 
-          <div className="flex items-center gap-2">
-            {installPrompt && !installed && (
-              <button
-                type="button"
-                onClick={installApp}
-                className="hidden rounded-full border border-slate-200 bg-white/70 px-4 py-2 text-xs font-bold shadow-sm backdrop-blur transition hover:bg-white sm:inline-flex"
-              >
-                Install app
-              </button>
-            )}
-            <a
-              href="https://github.com/wilfgrainger/zerobytemode"
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white transition hover:bg-violet-700"
-            >
-              View source
-            </a>
-          </div>
+          <a
+            href="https://github.com/wilfgrainger/zerobytemode"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white transition hover:bg-violet-700"
+          >
+            View source
+          </a>
         </header>
 
         <section className="grid gap-10 pb-12 pt-16 lg:grid-cols-[1.08fr_0.92fr] lg:items-end lg:pt-24">
