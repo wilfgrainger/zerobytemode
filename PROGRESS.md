@@ -6,65 +6,71 @@ Updated: 30 July 2026
 
 Make ZeroByteMode a genuinely open-source, local-only image compressor: one complete feature set, no account, no paywall and no remote application service.
 
-## Current candidate
+## Released implementation
 
-PR `#49`, branch `agent/open-source-local-only`, is based on released `main` commit `d6a05a04e3c714860cb9cacffc3496be19eb7085`.
+PR `#49` was squash-merged to `main` as `82ec4d7d85186314a9807b3b721d6fa43dc0bc9d`.
 
-## Delivered in the candidate
+The release:
 
-- Replaced Free/Pro entitlement logic with one unlocked application.
-- Removed sign-in, email collection, checkout, subscription management and support forms.
-- Removed Stripe, Resend, D1 and the Cloudflare subscription Worker.
-- Removed account cookies, magic-link verification and remote application URLs.
-- Removed Google Analytics and all third-party CSP application origins.
-- Made unlimited local batching, quality/format controls, all codecs, comparison and ZIP export available to everyone.
-- Removed the obsolete service worker rather than retain stale remote-service logic.
-- Added MIT licensing, contribution guidance and an explicit privacy boundary.
-- Replaced architecture and requirements documents with the local-only model.
-- Replaced entitlement tests with open-edition, no-network, no-storage and codec checks.
-- Added a permanent CI gate and repository invariant validator.
-- Added deployable static security headers and production-artifact browser testing.
+- replaces Free/Pro entitlement logic with one unlocked application;
+- removes sign-in, email collection, checkout, subscription management and support forms;
+- removes Stripe, Resend, D1 and the Cloudflare subscription Worker;
+- removes account cookies, magic-link verification and remote application URLs;
+- removes Google Analytics and all third-party application origins;
+- makes local batching, quality and format controls, all codecs, comparison and ZIP export available to everyone;
+- removes the obsolete service worker rather than retain stale remote-service logic;
+- adds MIT licensing, contribution guidance and an explicit privacy boundary;
+- replaces entitlement tests with open-edition, no-network, no-storage and codec checks;
+- keeps `out/` as the only deployable application unit.
+
+## Hosting decision
+
+GitHub Pages is the native host. Cloudflare, Wrangler and the former application Worker are not part of the release architecture.
+
+The permanent workflow now:
+
+1. validates the root-domain static export and browser application;
+2. builds a second Pages artefact for `/zerobytemode/`;
+3. verifies the Pages asset, logo and manifest paths;
+4. uploads `out/` with the official Pages artefact action;
+5. deploys through the `github-pages` environment.
+
+The Pages workflow is ready in code. Repository Settings → Pages must use **Source: GitHub Actions**. The current **Deploy from a branch / main** setting cannot compile the Next.js source tree. Custom-domain and redirect configuration are deliberately deferred.
 
 ## Team decision
 
 - **Jared:** one useful open product is clearer than a crippled free product plus unfinished billing.
 - **Richard:** keep the proven static export, Web Worker and WASM codecs; delete the server boundary.
-- **Dinesh:** rebuild the main journey rather than scatter `isPro` exceptions through 1,300 lines.
+- **Dinesh:** rebuild the main journey rather than scatter entitlement exceptions through the interface.
 - **Gilfoyle:** no identity or payment data is safer and cheaper than hardening an unnecessary account platform.
 - **Jian-Yang:** do not claim local privacy while loading analytics or validating subscriptions remotely.
 - **Cave Pony:** files in, smaller files out. Everything else must justify itself.
 
 ## Validation evidence
 
-Exact candidate `0038c59be90e12a23b8f099c051059ac3ace04b3` passed permanent workflow run `#15` (`30554440964`):
+Exact final PR head `28b2bb8e0c813c1ce33c64bcd048ac84cd761c11` passed permanent workflow run `#21` (`30561139015`):
 
 - locked Node 22 installation;
 - zero high or critical dependency findings;
 - repository one-edition and local-only invariants;
 - complete PR whitespace comparison;
 - ESLint and TypeScript;
-- static Next.js export;
-- exact HTML and `_headers` assertions;
-- production static-server Chromium tests;
+- static Next.js export and exact artefact assertions;
+- Chromium tests against the built static product;
 - a queue larger than the former free limit;
 - Auto-pilot, OxiPNG and AVIF/fallback compression paths;
 - all codec, format and quality controls available without entitlement;
 - no external application requests, account cookies or application-owned browser identity storage;
-- no account, checkout, subscription or paid feature surface;
-- mobile overflow and desktop/mobile screenshot evidence.
-
-The review artefact `open-local-release-evidence` has digest `sha256:252658f702b57d50059a1f35d0d6f19f7a8dd2902f2fa9b435a6f2276a59a999`.
-
-Desktop and 390px mobile screenshots were manually inspected. The product hierarchy is clear, no development overlay is present, and no clipping, horizontal overflow, inaccessible control or misleading paid-state residue was found.
+- no account, checkout, subscription or paid feature surface.
 
 ## Release state
 
-`main` and production are unchanged. This documentation-only handoff commit must pass the same permanent workflow before PR `#49` is marked ready. The PR remains unmerged unless the owner explicitly approves release.
+The open-source browser-only implementation is on `main`. The default GitHub Pages URL is the intended interim public origin. Publication is pending only the Pages Source setting being changed from branch deployment to GitHub Actions.
 
 ## Rollback
 
-Before merge, close the PR or abandon the branch. After a squash merge, revert the one release commit and redeploy the previous static output.
+Revert merge commit `82ec4d7d85186314a9807b3b721d6fa43dc0bc9d` to restore the previous Free/Pro application and Cloudflare control plane. That rollback would intentionally restore the removed remote architecture and is not recommended.
 
 ## Next highest-value action
 
-Confirm the final documentation-only exact-head workflow is green, update PR `#49` with the final evidence and mark it ready for owner review.
+Change Repository Settings → Pages → Build and deployment → Source to **GitHub Actions**, then inspect the resulting `Publish GitHub Pages` job and the default Pages URL. Configure the custom domain and redirect separately later.
