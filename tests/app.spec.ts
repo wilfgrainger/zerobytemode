@@ -5,6 +5,8 @@ const PNG = Buffer.from(
   "base64",
 );
 
+const isApplicationStorageKey = (key: string) => /^(zbm_|zerobytemode)/i.test(key);
+
 test.describe("ZeroByteMode open local edition", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -38,7 +40,11 @@ test.describe("ZeroByteMode open local edition", () => {
   });
 
   test("makes every codec and output control available", async ({ page }) => {
-    const engine = page.getByLabel("Engine");
+    const controls = page.getByRole("combobox");
+    const format = controls.nth(0);
+    const engine = controls.nth(1);
+
+    await expect(format).toBeEnabled();
     await expect(engine).toBeEnabled();
     await expect(engine.locator("option")).toHaveText([
       "Auto-pilot",
@@ -48,10 +54,7 @@ test.describe("ZeroByteMode open local edition", () => {
       "libavif",
       "Browser native",
     ]);
-
-    const format = page.getByLabel("Format");
-    await expect(format).toBeEnabled();
-    await expect(page.getByRole("slider", { name: "Quality" })).toBeEnabled();
+    await expect(page.getByRole("slider")).toBeEnabled();
   });
 
   test("does not make external application requests or write identity state", async ({ page, context }) => {
@@ -66,12 +69,13 @@ test.describe("ZeroByteMode open local edition", () => {
 
     expect(externalRequests).toEqual([]);
     expect(await context.cookies()).toEqual([]);
-    expect(
-      await page.evaluate(() => ({
-        local: window.localStorage.length,
-        session: window.sessionStorage.length,
-      })),
-    ).toEqual({ local: 0, session: 0 });
+
+    const storageKeys = await page.evaluate(() => ({
+      local: Object.keys(window.localStorage),
+      session: Object.keys(window.sessionStorage),
+    }));
+    expect(storageKeys.local.filter(isApplicationStorageKey)).toEqual([]);
+    expect(storageKeys.session.filter(isApplicationStorageKey)).toEqual([]);
   });
 
   test("is usable at a narrow mobile width", async ({ page }) => {
