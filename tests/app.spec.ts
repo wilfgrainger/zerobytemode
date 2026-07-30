@@ -22,6 +22,7 @@ test.describe("ZeroByteMode open local edition", () => {
 
     await expect(page.getByText(/Go Pro|Upgrade|Billing|Sign in/i)).toHaveCount(0);
     await expect(page.locator('input[type="email"], input[type="password"]')).toHaveCount(0);
+    await page.screenshot({ path: "test-results/desktop-open-edition.png", fullPage: true });
   });
 
   test("accepts a batch larger than the old free limit", async ({ page }) => {
@@ -58,10 +59,11 @@ test.describe("ZeroByteMode open local edition", () => {
   });
 
   test("does not make external application requests or write identity state", async ({ page, context }) => {
+    const applicationOrigin = new URL(page.url()).origin;
     const externalRequests: string[] = [];
     page.on("request", (request) => {
       const url = new URL(request.url());
-      if (url.origin !== "http://localhost:3000") externalRequests.push(request.url());
+      if (url.origin !== applicationOrigin) externalRequests.push(request.url());
     });
 
     await page.reload();
