@@ -6,9 +6,9 @@ Updated: 30 July 2026
 
 Make ZeroByteMode a genuinely open-source, local-only image compressor: one complete feature set, no account, no paywall and no remote application service.
 
-## Current branch
+## Current candidate
 
-`agent/open-source-local-only`, based on released `main` commit `d6a05a04e3c714860cb9cacffc3496be19eb7085`.
+Draft PR `#49`, branch `agent/open-source-local-only`, is based on released `main` commit `d6a05a04e3c714860cb9cacffc3496be19eb7085`.
 
 ## Delivered in the candidate
 
@@ -22,6 +22,7 @@ Make ZeroByteMode a genuinely open-source, local-only image compressor: one comp
 - Added MIT licensing, contribution guidance and an explicit privacy boundary.
 - Replaced architecture and requirements documents with the local-only model.
 - Replaced entitlement tests with open-edition, no-network, no-storage and codec checks.
+- Added a permanent CI gate and repository invariant validator.
 
 ## Team decision
 
@@ -32,23 +33,31 @@ Make ZeroByteMode a genuinely open-source, local-only image compressor: one comp
 - **Jian-Yang:** do not claim local privacy while loading analytics or validating subscriptions remotely.
 - **Cave Pony:** files in, smaller files out. Everything else must justify itself.
 
-## Validation still required
+## Validation state
 
-- Normalize `package-lock.json` after dependency removal.
-- Run locked install and dependency audit.
-- Run ESLint and TypeScript.
-- Build the static export.
-- Run browser, codec, mobile and local-boundary tests.
-- Inspect the generated homepage at desktop and mobile widths.
+Initial PR workflow run `#1` stopped at the high-severity dependency audit. It identified outdated Next.js and transitive Babel, glob, YAML, PostCSS and Sharp packages before any application checks ran.
+
+The candidate now uses Next.js `16.2.12`, the matching ESLint configuration and explicit audited transitive overrides. A one-shot branch workflow regenerated `package-lock.json`, committed the reduced lockfile and removed itself.
+
+The next exact-head workflow must prove:
+
+- locked Node 22 installation;
+- zero high or critical dependency findings;
+- repository architecture invariants;
+- patch whitespace, ESLint and TypeScript;
+- static export and exact-artifact assertions;
+- Chromium browser, codec and mobile tests;
+- no external application requests, account cookies or browser identity storage;
+- no account, checkout, subscription or paid feature surface.
 
 ## Release state
 
-No pull request is open and `main` has not been changed. The branch must not merge until the exact head passes the complete release gate.
+PR `#49` remains a draft. `main` and production are unchanged. The PR must not be marked ready or merged until the exact head passes the complete release gate and responsive evidence is inspected.
 
 ## Rollback
 
-Before merge, abandon the branch. After a squash merge, revert the one release commit and redeploy the previous static output.
+Before merge, close the PR or abandon the branch. After a squash merge, revert the one release commit and redeploy the previous static output.
 
 ## Next highest-value action
 
-Finish repository cleanup, normalize the lockfile, run exact-head validation and open a reviewable pull request only if the one-edition browser app passes.
+Run the permanent exact-head workflow on the owner-authored handoff commit, fix validated findings only, then inspect the desktop and mobile evidence before marking PR `#49` ready.
