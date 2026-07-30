@@ -1,19 +1,25 @@
 import type { NextConfig } from "next";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const nextConfig: NextConfig = {
-  output: 'export',
+  output: "export",
   trailingSlash: true,
-  images: { unoptimized: true },
+  basePath,
+  images: {
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
+  },
   webpack: (config, { dev }) => {
-    // Disable persistent cache in production to avoid RealContentHashPlugin errors
+    // Disable persistent cache in production to avoid RealContentHashPlugin errors.
     if (!dev) {
       config.cache = false;
     }
 
-    // Enable async WASM for @jsquash codec binaries
+    // Enable async WASM for @jsquash codec binaries.
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
 
-    // Serve .wasm files as standalone assets (fetched by WASM glue code at runtime)
+    // Serve .wasm files as standalone assets fetched by the codec glue code.
     config.module.rules.push({
       test: /\.wasm$/,
       type: "asset/resource",

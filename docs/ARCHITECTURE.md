@@ -1,41 +1,58 @@
-# ZeroByteMode | Architecture Specification
+# ZeroByteMode architecture
 
-## 1. System Overview
-ZeroByteMode is architected as an immutable static web application (SPA) built on Next.js, with serverless backend functionality handled strictly by Cloudflare Workers. It emphasizes local-first processing, ensuring data never leaves the client's device.
+## Product boundary
 
-## 2. Core Technologies
-- **Frontend Framework:** Next.js (Strictly configured for Static Export `output: 'export'`)
-- **Styling UI:** Tailwind CSS v4, custom glassmorphism patterns
-- **Processor:** Web Workers (`compressor.worker.ts`)
-- **Codecs:** WebAssembly (WASM) via `@jsquash` libraries
-- **Backend/API:** Cloudflare Workers (handling auth & Stripe)
-- **Database:** Cloudflare D1 (for subscriptions)
-- **Payments:** Stripe Checkout & Customer Portal
-- **Native Wrap (Optional):** Capacitor JS (`@capacitor/core`, `@capacitor/haptics`)
+ZeroByteMode is a static browser application. Its product boundary is the generated `out/` directory. Any static file host can serve it.
 
-## 3. Storage and State
-- **State Management:** React `useState` / `useEffect` for transient state; HTTP-only securely signed cookies / Lax cookies for authentication persistence (`zbm_user_email`, `zbm_session_token`, `zbm_pro_tier`).
-- **File System (Client-side):** Encoded buffers converted to Blobs and Object URLs. No intermediate DB storage is utilized.
-- **WASM Asset Loading:** Configured via Turbopack/Webpack in `next.config.ts`. The site relies heavily on asynchronous WASM initialization (`asyncWebAssembly: true`).
+There is no application server, account service, payment service, analytics service, database or image-upload endpoint.
 
-## 4. Workflows
+## Runtime flow
 
-### 4.1. The Processing Pipeline (Web Worker)
-1. User drops an image into the dropzone.
-2. The UI queues the `File` object and dispatches a message to `compressor.worker.ts`.
-3. Worker translates the file into `ImageData` using an `OffscreenCanvas`.
-4. Based on Tier + Quality Settings, the worker instantiates the relevant WASM module (MozJPEG, OxiPNG, AVIF, or native Canvas fallback).
-5. Output buffer is wrapped in a `Blob` and dispatched back to the UI thread.
-6. Main thread creates an `ObjectURL` and presents it for download.
+```mermaid
+flowchart LR
+    User[User-selected image]
+    FileAPI[Browser File API]
+    UI[React queue and controls]
+    Worker[Dedicated Web Worker]
+    Codec[Open WASM codec]
+    Blob[Local Blob URL]
+    Download[Preview, file download or ZIP]
 
-### 4.2. Auth & Magic Link Architecture
-1. Client requests a magic link via `/auth/magic-link` with their email.
-2. Cloudflare Worker generates a cryptographic single-use token and dispatches an email via Resend/SendGrid.
-3. User clicks the link; Worker validates the token and redirects back to the SPA `/?session_id=...` or generates secure cookies.
-4. Client SPA auto-rehydrates Pro tier access upon seeing valid session tokens.
+    User --> FileAPI --> UI --> Worker --> Codec --> Blob --> Download
+```
 
-### 4.3. Stripe Subscriptions
-1. Free users hit "Upgrade to Pro."
-2. Validated request calls Cloudflare Worker to create a Stripe Checkout Session using the user's email.
-3. Stripe processes transaction; webhook alerts Cloudflare Worker, syncing subscription state securely into D1.
-4. Client accesses billing portal securely verified via `zbm_session_token`.
+All image bytes remain inside the browser process. The page passes `File` objects to `src/app/compressor.worker.ts`. The worker selects or runs one of:
+
+- MozJPEG through `@jsquash/jpeg`;
+- OxiPNG through `@jsquash/oxipng`;
+- libwebp through `@jsquash/webp`;
+- libavif through `@jsquash/avif`;
+- the browser's native canvas encoder as a fallback.
+
+The worker returns a `Blob`. The main thread creates an in-memory object URL for preview and download. ZIP archives are assembled locally with JSZip.
+
+## State and privacy
+
+Queue, settings and output URLs live only in React memory. The application does not write account cookies, local storage, session storage or IndexedDB. Reloading the page clears the current work.
+
+Static hosting still sees normal requests for HTML, JavaScript, CSS, images and WASM assets. It does not receive the user's selected image files.
+
+## Security controls
+
+The document CSP:
+
+- limits application connections to the same origin;
+- blocks forms and frames;
+- permits local Blob images and workers;
+- permits the WebAssembly execution required by the codecs;
+- contains no Stripe, analytics, email or Worker origins.
+
+The source repository includes browser tests that fail if account, checkout or external application requests return.
+
+## Deployment
+
+`npm run build` creates `out/`. Deployment is a copy of that immutable directory to a static host. Cloudflare can host the files, but it is not part of the application architecture and no Cloudflare Worker is required.
+
+## Recovery
+
+The release unit is a Git commit and its generated static output. Roll back by rebuilding and redeploying the previous known-good commit. There is no database migration, secret rotation or secondary service to coordinate.

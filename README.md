@@ -1,42 +1,78 @@
-# ZeroByteMode | Web Engineering
-**Sovereign Web Architecture**
+# ZeroByteMode
 
-We replace vulnerable CMS stacks (WordPress) with high-performance, immutable static architecture.
-Zero servers to hack. Zero plugins to update. Zero monthly hosting fees.
+**Open-source image compression. No uploads. No account. No paid tier.**
 
-## Stack
-- **GitHub Pro:** Source Control
-- **GitHub Pages:** Hosting & CDN
-- **HTML5/JS:** Immutable Frontend
-- **Stripe/Snipcart:** Serverless Commerce
+ZeroByteMode batch-compresses JPEG, PNG, WebP and AVIF files directly in a modern browser. Images are decoded and encoded inside a Web Worker using open WebAssembly codecs. The application has no image-upload endpoint, login system, payment provider, analytics tracker or application database.
 
-## Deploy
-This repository is configured for automatic deployment via **GitHub Actions** and **GitHub Pages**.
-Pushing to the `main` branch automatically triggers the `.github/workflows/deploy.yml` pipeline, which builds the Next.js static export and deploys the Cloudflare Worker API.
+## What everyone gets
 
-## Docs
-- `docs/ARCHITECTURE.md`
-- `docs/DIAGRAMS.md`
+- Unlimited local batch queues, bounded only by the device's available memory.
+- Auto-pilot compression plus MozJPEG, OxiPNG, libwebp, libavif and browser-native engines.
+- Output quality and format controls.
+- Individual downloads, visual comparison and ZIP export.
+- Static deployment with no runtime application server or secret.
 
-## Local Dev: Magic Link Login
-The login flow uses a Cloudflare Worker (magic link + Stripe subscription validation).
+There is one edition. Nothing is unlocked by payment, cookies, query parameters or an account.
 
-Create `.env.local` (see `.env.example`) and set:
-- `NEXT_PUBLIC_BASE_URL` (e.g. `http://localhost:3000`)
-- `NEXT_PUBLIC_WORKER_URL` (your Worker endpoint URL)
+## How it works
 
-Stripe links can be configured via:
-- `NEXT_PUBLIC_STRIPE_CHECKOUT_URL`
-- `NEXT_PUBLIC_STRIPE_PORTAL_URL`
+```text
+Local images
+    │
+    ▼
+Browser File API
+    │
+    ▼
+Web Worker ──> @jsquash WASM codec
+    │
+    ▼
+Local Blob URL ──> preview / download / ZIP
+```
 
-## Android Readiness Path
-To support both desktop browser and future Android app delivery, this project is already in a good place because it uses client-side processing and static export (`next export` via `output: "export"`).
+The application may be hosted anywhere capable of serving static files. Hosting receives ordinary requests for the application assets; selected images are never submitted to it.
 
-Recommended path:
-1. Keep web app quality high (PWA manifest + responsive UI).
-2. Add Capacitor CLI + Android platform when ready: `npm i -D @capacitor/cli && npm i @capacitor/android` then `npx cap init` and `npx cap add android`.
-3. Use the Next static output (`out/`) as the Capacitor web asset directory.
-4. Validate camera/filesystem permissions for Android-specific UX if native integrations are needed.
-5. Keep auth and billing endpoints on HTTPS (current Worker approach is compatible).
+## Local development
 
-This gives one core codebase for desktop web + Android shell with minimal divergence.
+Use Node.js 22 and npm.
+
+```bash
+npm ci
+npm run dev
+```
+
+Run the complete release gate:
+
+```bash
+npm run check
+```
+
+Build the provider-neutral static site:
+
+```bash
+npm run build
+# output: out/
+```
+
+## Repository structure
+
+```text
+src/app/page.tsx               Browser UI and local batch queue
+src/app/compressor.worker.ts  Local Web Worker and WASM codecs
+public/                       Static brand and application assets
+tests/                        Browser, codec and local-boundary checks
+docs/                         Architecture, requirements and review record
+AGENTS.md                     Delivery and review contract
+PROGRESS.md                   Current handoff and release state
+```
+
+## Privacy boundary
+
+ZeroByteMode does not require an email address and does not include Stripe, Resend, Google Analytics, a Cloudflare application Worker or any other application API. See [PRIVACY.md](PRIVACY.md) for the precise boundary.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Changes must preserve the local-only architecture and must not reintroduce feature gating, telemetry or remote file processing.
+
+## Licence
+
+Software in this repository is available under the [MIT licence](LICENSE). The ZeroByteMode name and logo are not granted for misleading endorsement or impersonation; forks should use their own identity.

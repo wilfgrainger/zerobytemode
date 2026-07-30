@@ -1,19 +1,20 @@
 {
   "name": "ZeroByteMode",
   "short_name": "ZeroByte",
-  "description": "Premium Client-Side Image Compression",
-  "start_url": "/",
+  "description": "Open-source image compression that runs entirely on your device.",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "background_color": "#f8fafc",
+  "theme_color": "#f8fafc",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

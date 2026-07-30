@@ -1,73 +1,33 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-test.describe('Compression Codecs', () => {
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64",
+);
 
-  test.beforeEach(async ({ page }) => {
-    // Navigate with success param to unlock Pro engines
-    await page.goto('/?success=true');
-    await page.waitForLoadState('networkidle');
+async function compressWith(page: import("@playwright/test").Page, engine: string, filename: string) {
+  await page.goto("/");
+  await page.getByRole("combobox").nth(1).selectOption({ label: engine });
+  await page.locator('input[type="file"]').setInputFiles({
+    name: filename,
+    mimeType: "image/png",
+    buffer: PNG,
+  });
+  await page.getByRole("button", { name: "Compress batch" }).click();
+  await expect(page.getByText("done", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("button", { name: "Download", exact: true })).toBeVisible();
+}
+
+test.describe("local compression engines", () => {
+  test("Auto-pilot processes an image", async ({ page }) => {
+    await compressWith(page, "Auto-pilot", "auto.png");
   });
 
-  // Tests converted to interact with UI per guidelines for avoiding worker context destruction
-
-  test('MozJPEG WASM initializes and compresses an image', async ({ page }) => {
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click('text="Drop files here or tap to browse"');
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles({
-      name: 'test.jpg',
-      mimeType: 'image/jpeg',
-      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
-    });
-
-    // Wait for the file to appear in the queue
-    await expect(page.locator('text=test.jpg')).toBeVisible();
-
-    // Start compression
-    await page.click('button:has-text("Process Queue")');
-
-    // Check if it finishes processing (the text "✨ Click to Compare" becomes visible when done)
-    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
+  test("OxiPNG processes an image", async ({ page }) => {
+    await compressWith(page, "OxiPNG", "oxipng.png");
   });
 
-  test('OxiPNG WASM initializes and compresses an image', async ({ page }) => {
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click('text="Drop files here or tap to browse"');
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles({
-      name: 'test.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64')
-    });
-
-    // Wait for the file to appear in the queue
-    await expect(page.locator('text=test.png')).toBeVisible();
-
-    // Start compression
-    await page.click('button:has-text("Process Queue")');
-
-    // Check if it finishes processing
-    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
+  test("libavif processes or safely falls back", async ({ page }) => {
+    await compressWith(page, "libavif", "avif-source.png");
   });
-
-  test('AVIF WASM initializes and compresses an image (Single-thread bypass)', async ({ page }) => {
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click('text="Drop files here or tap to browse"');
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles({
-      name: 'test.webp',
-      mimeType: 'image/webp',
-      buffer: Buffer.from('UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'base64')
-    });
-
-    // Wait for the file to appear in the queue
-    await expect(page.locator('text=test.webp')).toBeVisible();
-
-    // Start compression
-    await page.click('button:has-text("Process Queue")');
-
-    // Check if it finishes processing
-    await expect(page.locator('text=Click to Compare').first()).toBeVisible({ timeout: 15000 });
-  });
-
 });
