@@ -1,0 +1,78 @@
+name: Validate open local edition
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Audit high severity dependencies
+        run: npm audit --audit-level=high
+
+      - name: Validate repository architecture
+        run: npm run repo:check
+
+      - name: Check patch whitespace
+        run: git diff --check HEAD^
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Build static application
+        run: npm run build
+
+      - name: Verify exact static artifact
+        shell: bash
+        run: |
+          test -f out/index.html
+          grep -q "No account" out/index.html
+          grep -q "No paywall" out/index.html
+          grep -q "All unlocked" out/index.html
+          ! grep -Eqi "checkout|billing|magic link|stripe" out/index.html
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser and codec tests
+        run: npm test
+
+      - name: Upload review evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: open-local-release-evidence
+          path: |
+            out
+            test-results
+            playwright-report
+          if-no-files-found: warn
+          retention-days: 3
