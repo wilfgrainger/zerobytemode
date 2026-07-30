@@ -62,16 +62,19 @@ jobs:
         shell: bash
         run: |
           test -f out/index.html
+          test -f out/_headers
           grep -q "No account" out/index.html
           grep -q "No paywall" out/index.html
           grep -q "All unlocked" out/index.html
+          grep -q "Cross-Origin-Embedder-Policy: require-corp" out/_headers
+          grep -q "connect-src 'self'" out/_headers
           ! grep -Eqi "checkout|billing|magic link|stripe" out/index.html
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run browser and codec tests
-        run: npm test
+      - name: Run browser and codec tests against static output
+        run: npm run test:browser
 
       - name: Upload review evidence
         if: always()
