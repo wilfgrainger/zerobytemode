@@ -1,107 +1,88 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-test.describe('ZeroByteMode Visual & Functional Review', () => {
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64",
+);
 
+test.describe("ZeroByteMode open local edition", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto("/");
   });
 
-  test('Desktop Visual Report', async ({ page }) => {
-    await expect(page).toHaveTitle(/ZeroByteMode/);
-    // Take screenshot of the hero section
-    await page.screenshot({ path: 'test-results/desktop-home.png', fullPage: true });
+  test("publishes one complete open edition", async ({ page }) => {
+    await expect(page).toHaveTitle(/Open-source local image compressor/);
+    await expect(page.getByRole("heading", { name: /Serious image compression/ })).toBeVisible();
+    await expect(page.getByText("No account. No paywall.")).toBeVisible();
+    await expect(page.getByText("All unlocked")).toBeVisible();
+    await expect(page.getByText("Paid tier")).toBeVisible();
+    await expect(page.getByText("None", { exact: true })).toHaveCount(3);
+
+    await expect(page.getByText(/Go Pro|Upgrade|Billing|Sign in/i)).toHaveCount(0);
+    await expect(page.locator('input[type="email"], input[type="password"]')).toHaveCount(0);
   });
 
-  test('Mobile Visual Report', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    // Ensure a key element like the upload dropzone or optimization panel is visible on mobile
-    await expect(page.getByText('Deploy Assets.')).toBeVisible();
-    await page.screenshot({ path: 'test-results/mobile-home.png', fullPage: true });
+  test("accepts a batch larger than the old free limit", async ({ page }) => {
+    await page.locator('input[type="file"]').setInputFiles(
+      [1, 2, 3, 4].map((number) => ({
+        name: `image-${number}.png`,
+        mimeType: "image/png",
+        buffer: PNG,
+      })),
+    );
+
+    for (const number of [1, 2, 3, 4]) {
+      await expect(page.getByText(`image-${number}.png`)).toBeVisible();
+    }
+    await expect(page.getByText("0 of 4 complete")).toBeVisible();
   });
 
-  test('Pro State Visual Report', async ({ page }) => {
-    // Navigate with success param to trigger Pro mock
-    await page.goto('/?success=true');
-    await expect(page.locator('#pro-status-badge')).toBeVisible();
+  test("makes every codec and output control available", async ({ page }) => {
+    const engine = page.getByLabel("Engine");
+    await expect(engine).toBeEnabled();
+    await expect(engine.locator("option")).toHaveText([
+      "Auto-pilot",
+      "MozJPEG",
+      "OxiPNG",
+      "libwebp",
+      "libavif",
+      "Browser native",
+    ]);
 
-    // Check for the Pro Options Bar
-    await expect(page.getByText('Quality', { exact: true })).toBeVisible();
-    await expect(page.getByText('Optimization', { exact: true })).toBeVisible();
-    await expect(page.getByText('Format', { exact: true })).toBeVisible();
-
-    // Check for engine selection buttons
-    await expect(page.locator('button').filter({ hasText: 'MOZ' }).first()).toBeVisible();
-    await expect(page.locator('button').filter({ hasText: 'AVIF' }).first()).toBeVisible();
-
-    // Check for the encryption toggle
-    await expect(page.getByText('STANDARD ZIP')).toBeVisible();
-
-    await page.screenshot({ path: 'test-results/pro-activated-v3.png' });
+    const format = page.getByLabel("Format");
+    await expect(format).toBeEnabled();
+    await expect(page.getByRole("slider", { name: "Quality" })).toBeEnabled();
   });
 
-  test('Queuing & Bulk Interaction Review', async ({ page }) => {
-    // Navigate with success param to trigger Pro mock
-    await page.goto('/?success=true');
+  test("does not make external application requests or write identity state", async ({ page, context }) => {
+    const externalRequests: string[] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (url.origin !== "http://localhost:3000") externalRequests.push(request.url());
+    });
 
-    // Since 'Start Compressing' or similar button only appears after a file is selected,
-    // we can't click it immediately. Instead, verify the input accepts multiple files.
-    await expect(page.locator('input[type="file"]')).toHaveAttribute('multiple', '');
+    await page.reload();
+    await page.waitForLoadState("networkidle");
 
-    // Check if the ZIP download button appears when files are added (not possible without actual files here)
+    expect(externalRequests).toEqual([]);
+    expect(await context.cookies()).toEqual([]);
+    expect(
+      await page.evaluate(() => ({
+        local: window.localStorage.length,
+        session: window.sessionStorage.length,
+      })),
+    ).toEqual({ local: 0, session: 0 });
   });
 
-  test('Support modal opens and closes from footer', async ({ page }) => {
-    // Find and click the Support button in the footer
-    const supportButton = page.locator('footer button[aria-label="Open support modal"]');
-    await expect(supportButton).toBeVisible();
-    await supportButton.click();
+  test("is usable at a narrow mobile width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
 
-    // Verify the Support modal is open
-    const modal = page.locator('[role="dialog"][aria-labelledby="support-modal-title"]');
-    await expect(modal).toBeVisible();
-    await expect(page.locator('#support-modal-title')).toBeVisible();
-
-    // Close with the X button
-    await page.locator('[aria-label="Close"]').first().click();
-    await expect(modal).not.toBeVisible();
-  });
-
-  test('Support modal closes on Escape key', async ({ page }) => {
-    const supportButton = page.locator('footer button[aria-label="Open support modal"]');
-    await supportButton.click();
-
-    const modal = page.locator('[role="dialog"][aria-labelledby="support-modal-title"]');
-    await expect(modal).toBeVisible();
-
-    await page.keyboard.press('Escape');
-    await expect(modal).not.toBeVisible();
-  });
-
-  test('Sign in modal closes on Escape key', async ({ page }) => {
-    const signInButton = page.locator('button', { hasText: 'Sign In' }).first();
-    await signInButton.click();
-
-    const modal = page.locator('[role="dialog"][aria-labelledby="signin-modal-title"]');
-    await expect(modal).toBeVisible();
-
-    await page.keyboard.press('Escape');
-    await expect(modal).not.toBeVisible();
-  });
-
-  test('Upgrade modal opens and closes from Go Pro button', async ({ page }) => {
-    const goProButton = page.locator('button', { hasText: 'Go Pro' }).first();
-    await expect(goProButton).toBeVisible();
-    await goProButton.click();
-
-    const modal = page.locator('[role="dialog"][aria-labelledby="upgrade-modal-title"]');
-    await expect(modal).toBeVisible();
-    await expect(page.locator('#upgrade-modal-title')).toHaveText('Activate Pro Compression');
-
-    await page.locator('[aria-label="Close"]').first().click();
-    await expect(modal).not.toBeVisible();
-  });
-
-  test('Footer has accessible Support button', async ({ page }) => {
-    await expect(page.locator('footer button[aria-label="Open support modal"]')).toBeVisible();
+    await expect(page.getByRole("button", { name: "Choose images" })).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+    expect(overflow).toBe(false);
+    await page.screenshot({ path: "test-results/mobile-open-edition.png", fullPage: true });
   });
 });
