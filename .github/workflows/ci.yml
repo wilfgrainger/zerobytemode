@@ -1,4 +1,4 @@
-name: Validate open local edition
+name: Validate and deploy open local edition
 
 on:
   pull_request:
@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   validate:
+    name: Validate browser application
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -57,6 +58,9 @@ jobs:
 
       - name: Build static application
         run: npm run build
+        env:
+          NEXT_PUBLIC_BASE_PATH: ""
+          NEXT_PUBLIC_SITE_URL: "https://www.zerobytemode.com"
 
       - name: Verify exact static artifact
         shell: bash
@@ -87,3 +91,63 @@ jobs:
             playwright-report
           if-no-files-found: warn
           retention-days: 3
+
+  pages:
+    name: Publish GitHub Pages
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout validated commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build Pages release
+        run: npm run build
+        env:
+          NEXT_PUBLIC_BASE_PATH: "/zerobytemode"
+          NEXT_PUBLIC_SITE_URL: "https://wilfgrainger.github.io/zerobytemode"
+
+      - name: Verify Pages paths and local-only product
+        shell: bash
+        run: |
+          test -f out/index.html
+          grep -q '/zerobytemode/_next/' out/index.html
+          grep -q '/zerobytemode/logo.svg' out/index.html
+          grep -q '/zerobytemode/manifest.json' out/index.html
+          grep -q '"start_url": "."' out/manifest.json
+          grep -q "No account" out/index.html
+          grep -q "No paywall" out/index.html
+          ! grep -Eqi "checkout|billing|magic link|stripe" out/index.html
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./out
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
