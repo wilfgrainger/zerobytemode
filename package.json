@@ -14,12 +14,14 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
+    "preview": "node scripts/serve-static.mjs",
     "repo:check": "node scripts/validate-repository.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "playwright test",
-    "test:codecs": "playwright test tests/engines.spec.ts",
-    "check": "npm run repo:check && npm run lint && npm run typecheck && npm run build && npm run test"
+    "test": "npm run build && playwright test",
+    "test:browser": "playwright test",
+    "test:codecs": "npm run build && playwright test tests/engines.spec.ts",
+    "check": "npm run repo:check && npm run lint && npm run typecheck && npm run build && npm run test:browser"
   },
   "dependencies": {
     "@jsquash/avif": "^2.1.1",
