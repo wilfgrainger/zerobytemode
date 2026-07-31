@@ -26,22 +26,13 @@ export const metadata: Metadata = {
       "Open-source batch image compression that runs entirely in your browser.",
     url: siteUrl,
     siteName: "ZeroByteMode",
-    images: [
-      {
-        url: `${siteUrl}/opengraph-image.png`,
-        width: 1200,
-        height: 630,
-        alt: "ZeroByteMode local image compressor",
-      },
-    ],
     locale: "en_GB",
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "ZeroByteMode | Open-source local image compressor",
     description: "Compress full image batches locally. No accounts or paid tier.",
-    images: [`${siteUrl}/opengraph-image.png`],
   },
   manifest: `${basePath}/manifest.json`,
   appleWebApp: {
