@@ -25,7 +25,7 @@ Keep changes small enough to review and include:
 - tests run and their result;
 - screenshots for material visual changes;
 - privacy or compatibility implications;
-- rollback instructions.
+- recovery instructions.
 
 Codec changes should include a real browser test. Privacy claims must be supported by code and tests rather than marketing copy.
 
