@@ -1,0 +1,93 @@
+name: Create clean repository root
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/history-cleanup.yml
+
+permissions:
+  contents: write
+
+jobs:
+  clean-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout every public ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all branches and tags
+        run: |
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' '+refs/tags/*:refs/tags/*' --prune
+
+      - name: Archive pre-clean history
+        run: |
+          git bundle create "$RUNNER_TEMP/zerobytemode-pre-clean-2026-07-31.bundle" --all
+          git bundle verify "$RUNNER_TEMP/zerobytemode-pre-clean-2026-07-31.bundle"
+
+      - name: Upload recovery bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: zerobytemode-pre-clean-history
+          path: ${{ runner.temp }}/zerobytemode-pre-clean-2026-07-31.bundle
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Create one parentless release commit
+        id: root
+        shell: bash
+        run: |
+          git config user.name "Wilfred Grainger"
+          git config user.email "51911955+wilfgrainger@users.noreply.github.com"
+          git checkout --orphan clean-root
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          rm -f .github/workflows/history-cleanup.yml
+          git add -A
+          git commit -m "Initial open-source release"
+          test "$(git rev-list --count HEAD)" = "1"
+          test ! -e .github/workflows/history-cleanup.yml
+          root_sha="$(git rev-parse HEAD)"
+          echo "sha=$root_sha" >> "$GITHUB_OUTPUT"
+          git push origin HEAD:refs/heads/clean-root-candidate --force
+
+      - name: Wait for verified main cutover
+        shell: bash
+        run: |
+          candidate="${{ steps.root.outputs.sha }}"
+          for attempt in $(seq 1 240); do
+            current="$(git ls-remote origin refs/heads/main | cut -f1)"
+            if [ "$current" = "$candidate" ]; then
+              echo "main now points to the clean root $candidate"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "main was not moved to the clean root in time" >&2
+          exit 1
+
+      - name: Delete every non-main branch and tag
+        shell: bash
+        run: |
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+          while IFS= read -r ref; do
+            branch="${ref#refs/remotes/origin/}"
+            case "$branch" in
+              main|HEAD) ;;
+              *) git push origin --delete "$branch" ;;
+            esac
+          done < <(git for-each-ref --format='%(refname)' refs/remotes/origin)
+
+          while IFS= read -r ref; do
+            [ -z "$ref" ] || git push origin ":$ref"
+          done < <(git ls-remote --tags --refs origin | awk '{print $2}')
+
+      - name: Verify clean public graph
+        shell: bash
+        run: |
+          test "$(git ls-remote --heads origin | wc -l | tr -d ' ')" = "1"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "${{ steps.root.outputs.sha }}"
+          test "$(git rev-list --count HEAD)" = "1"
