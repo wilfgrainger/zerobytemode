@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-ZeroByteMode is a static browser application. Its product boundary is the generated `out/` directory. Any static file host can serve it.
+ZeroByteMode is a static browser application. Its product boundary is the generated `out/` directory, deployed to GitHub Pages.
 
 There is no application server, account service, payment service, analytics service, database or image-upload endpoint.
 
@@ -35,24 +35,24 @@ The worker returns a `Blob`. The main thread creates an in-memory object URL for
 
 Queue, settings and output URLs live only in React memory. The application does not write account cookies, local storage, session storage or IndexedDB. Reloading the page clears the current work.
 
-Static hosting still sees normal requests for HTML, JavaScript, CSS, images and WASM assets. It does not receive the user's selected image files.
+GitHub Pages receives normal requests for HTML, JavaScript, CSS, images and WASM assets. It does not receive the user's selected image files.
 
-## Security controls
+## Browser security controls
 
 The document CSP:
 
-- limits application connections to the same origin;
-- blocks forms and frames;
+- limits network connections to same-origin assets and local `blob:` objects;
+- blocks forms and embedded objects;
 - permits local Blob images and workers;
 - permits the WebAssembly execution required by the codecs;
-- contains no Stripe, analytics, email or Worker origins.
+- contains no analytics, email, payment or application-service origins.
 
-The source repository includes browser tests that fail if account, checkout or external application requests return.
+GitHub Pages controls HTTP response headers. The application does not claim custom response-header protections that Pages cannot configure. Browser tests fail if account, checkout or external application requests return.
 
 ## Deployment
 
-`npm run build` creates `out/`. Deployment is a copy of that immutable directory to a static host. Cloudflare can host the files, but it is not part of the application architecture and no Cloudflare Worker is required.
+`npm run build` creates `out/`. GitHub Actions validates that exact artifact, uploads it with the official Pages artifact action and deploys it through the `github-pages` environment. `public/CNAME` supplies the custom domain in the generated artifact.
 
-## Recovery
+## Release history and recovery
 
-The release unit is a Git commit and its generated static output. Roll back by rebuilding and redeploying the previous known-good commit. There is no database migration, secret rotation or secondary service to coordinate.
+The public repository is maintained as one parentless release commit on `main`. Before a history rewrite, the complete prior Git graph is exported to a time-limited Git bundle artifact. Recovery means restoring the required tree from that bundle, rerunning the release gate and publishing a new single root commit. There is no database migration, secret rotation or secondary application service to coordinate.
