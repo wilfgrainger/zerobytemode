@@ -24,8 +24,8 @@ The owner sets product direction. For substantial delivery work, use the reconci
 
 ## Handoff
 
-Read `PROGRESS.md` before editing. Update it after substantial work with the outcome, evidence, current branch/PR state, remaining risks and next highest-value action.
+Read `PROGRESS.md` before editing. Update it after substantial work with the outcome, evidence, remaining risks and next highest-value action.
 
 ## Release gate
 
-A release requires a locked install, zero high or critical audit findings, lint, TypeScript, static export, browser checks, codec evidence, mobile review, no external application requests, no entitlement surface and a documented rollback commit.
+A release requires a locked install, zero high or critical audit findings, lint, TypeScript, static export, browser checks, codec evidence, mobile review, no external application requests, no entitlement surface and a documented recovery procedure.
