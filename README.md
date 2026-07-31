@@ -46,7 +46,7 @@ Run the complete release gate:
 npm run check
 ```
 
-Build the provider-neutral static site:
+Build the static site:
 
 ```bash
 npm run build
@@ -56,18 +56,18 @@ npm run build
 ## Repository structure
 
 ```text
-src/app/page.tsx               Browser UI and local batch queue
+src/app/page.tsx              Browser UI and local batch queue
 src/app/compressor.worker.ts  Local Web Worker and WASM codecs
 public/                       Static brand and application assets
 tests/                        Browser, codec and local-boundary checks
-docs/                         Architecture, requirements and review record
+docs/                         Architecture and product requirements
 AGENTS.md                     Delivery and review contract
-PROGRESS.md                   Current handoff and release state
+PROGRESS.md                   Verified release evidence and next action
 ```
 
 ## Privacy boundary
 
-ZeroByteMode does not require an email address and does not include Stripe, Resend, Google Analytics, a Cloudflare application Worker or any other application API. See [PRIVACY.md](PRIVACY.md) for the precise boundary.
+ZeroByteMode does not require an email address and does not include payment, analytics, authentication or remote image-processing services. See [PRIVACY.md](PRIVACY.md) for the precise boundary.
 
 ## Contributing
 
