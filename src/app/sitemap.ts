@@ -1,18 +1,14 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from "next";
 
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://www.zerobytemode.com';
-
   return [
     {
-      url: baseUrl,
+      url: "https://zerobytemode.com",
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1.0,
+      changeFrequency: "weekly",
+      priority: 1,
     },
-    // We can add paths for specific tools later if we expand
-    // e.g. { url: `${baseUrl}/tools/avif-compressor`, changeFrequency: 'monthly', priority: 0.8 }
   ];
 }
