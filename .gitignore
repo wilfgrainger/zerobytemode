@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Next.js static build
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Tests and coverage
+coverage/
+playwright-report/
+test-results/
+
+# Local environment
+.env*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor and operating system
+.DS_Store
+.vscode/
+.idea/
+
+# Local keys
+*.pem
