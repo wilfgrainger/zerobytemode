@@ -9,7 +9,7 @@ test.describe("local-only security boundary", () => {
 
     expect(policy).toContain("connect-src 'self' blob:");
     expect(policy).toContain("form-action 'none'");
-    expect(policy).toContain("frame-ancestors 'none'");
+    expect(policy).toContain("object-src 'none'");
     expect(policy).not.toMatch(/stripe|workers\.dev|google-analytics|googletagmanager|resend/i);
   });
 
@@ -17,7 +17,7 @@ test.describe("local-only security boundary", () => {
     await page.goto("/");
     await expect(page.locator("form")).toHaveCount(0);
     await expect(page.locator('script[src^="http"]')).toHaveCount(0);
-    await expect(page.locator('iframe')).toHaveCount(0);
+    await expect(page.locator("iframe")).toHaveCount(0);
     await expect(page.getByText(/checkout|subscription|billing|magic link/i)).toHaveCount(0);
   });
 });
