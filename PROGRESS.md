@@ -4,73 +4,66 @@ Updated: 31 July 2026
 
 ## Mission
 
-Make ZeroByteMode a genuinely open-source, local-only image compressor: one complete feature set, no account, no paywall and no remote application service.
+ZeroByteMode is one complete open-source image compressor that runs locally in the browser: no upload service, account, analytics, payment or paid feature tier.
 
-## Released implementation
+## Product boundary
 
-PR `#49` was squash-merged to `main` as `82ec4d7d85186314a9807b3b721d6fa43dc0bc9d`.
+- Static Next.js export hosted by GitHub Pages at `https://zerobytemode.com`.
+- JPEG, PNG, WebP and AVIF processing in a browser Web Worker.
+- MozJPEG, OxiPNG, libwebp and libavif WebAssembly codecs, plus browser-native encoding.
+- Batch queues, quality controls, previews, individual downloads and ZIP export are available to everyone.
+- Image content, filenames and generated files are not sent to an application service.
+- `public/CNAME` is the single custom-domain source; `out/` is the deployable application unit.
 
-The release:
+## Compression validation
 
-- replaces Free/Pro entitlement logic with one unlocked application;
-- removes sign-in, email collection, checkout, subscription management and support forms;
-- removes Stripe, Resend, D1 and the Cloudflare subscription Worker;
-- removes account cookies, magic-link verification and remote application URLs;
-- removes Google Analytics and all third-party application origins;
-- makes local batching, quality and format controls, all codecs, comparison and ZIP export available to everyone;
-- removes the obsolete service worker rather than retain stale remote-service logic;
-- adds MIT licensing, contribution guidance and an explicit privacy boundary;
-- replaces entitlement tests with open-edition, no-network, no-storage and codec checks;
-- keeps `out/` as the only deployable application unit.
+Exact release head `30dff51b3a873fdddc4046ac9687b018a114d974` passed workflow run `#37` (`30622835754`) with 17 Chromium tests and evidence artifact `8790145112`.
 
-## Hosting decision
+Real 320×240 fixture results at quality 82:
 
-GitHub Pages is the native host. Cloudflare, Wrangler and the former application Worker are not part of the release architecture.
+| Path | Input | Output | Reduction | Result |
+| --- | ---: | ---: | ---: | --- |
+| MozJPEG | 102,534 B PNG | 18,126 B JPEG | 82% | Valid JPEG, dimensions preserved |
+| OxiPNG | 168,070 B PNG | 39,150 B PNG | 77% | Valid PNG, dimensions preserved |
+| libwebp | 102,534 B PNG | 10,522 B WebP | 90% | Valid WebP, dimensions preserved |
+| libavif | 102,534 B PNG | 10,596 B AVIF | 90% | Valid AVIF, dimensions preserved |
+| Browser JPEG | 102,534 B PNG | 15,967 B JPEG | 84% | Valid JPEG, dimensions preserved |
 
-The repository Pages source was changed to **GitHub Actions** on 31 July 2026. The workflow now:
+Additional evidence:
 
-1. validates the root-domain static export and browser application;
-2. builds the custom-domain artefact with no repository sub-path;
-3. verifies root asset, logo, manifest and `CNAME` paths;
-4. uploads `out/` with the official Pages artefact action;
-5. deploys through the `github-pages` environment.
+- Auto-pilot selected OxiPNG for PNG, MozJPEG for JPEG and browser-native WebP for WebP.
+- AVIF encoded at quality 92, decoded, then recompressed from 13,850 B to 4,944 B at quality 45.
+- MozJPEG quality 35 produced 6,213 B versus 34,555 B at quality 92.
+- Mixed PNG, JPEG and WebP batches completed and produced a valid ZIP with correct filenames.
+- Corrupt image input failed safely without exposing a download.
+- The browser made no external application requests and wrote no identity state.
+- Locked install, dependency audit, repository invariants, whitespace, lint, TypeScript and static export all passed.
 
-The custom-domain release is configured for `https://zerobytemode.com` and the generated static artefact contains `CNAME` with `zerobytemode.com`.
+## Defects fixed during validation
+
+- Removed a broken manual AVIF WASM path override that silently caused WebP fallback while the interface reported libavif.
+- Report the encoder that actually produced each file, including fallbacks and original-file retention.
+- Allowed local `blob:` reads in the CSP so ZIP generation can read completed in-memory outputs.
+- Removed the unsupported `_headers` configuration and aligned the local validation server with GitHub Pages rather than pretending custom COOP/COEP headers exist in production.
+- Made CI whitespace validation work for a parentless root commit.
 
 ## Team decision
 
-- **Jared:** one useful open product is clearer than a crippled free product plus unfinished billing.
-- **Richard:** keep the proven static export, Web Worker and WASM codecs; delete the server boundary.
-- **Dinesh:** rebuild the main journey rather than scatter entitlement exceptions through the interface.
-- **Gilfoyle:** no identity or payment data is safer and cheaper than hardening an unnecessary account platform.
-- **Jian-Yang:** do not claim local privacy while loading analytics or validating subscriptions remotely.
-- **Cave Pony:** files in, smaller files out. Everything else must justify itself.
+- **Jared:** release only after the complete user journey and evidence matrix pass.
+- **Richard:** codec claims must identify the encoder and the emitted MIME signature, not merely a successful button click.
+- **Dinesh:** validate real dimensions, quality behaviour, mixed batches, ZIP contents and corrupt inputs in Chromium.
+- **Gilfoyle:** test the same isolation and hosting constraints GitHub Pages actually provides.
+- **Jian-Yang:** a WebP fallback is not an AVIF success; fallback reporting must be explicit.
+- **Cave Pony:** one verified product tree, one domain source and no dead hosting machinery.
 
-## Validation evidence
+## Repository history
 
-Exact final PR head `28b2bb8e0c813c1ce33c64bcd048ac84cd761c11` passed permanent workflow run `#21` (`30561139015`):
+The public release is maintained as one parentless commit on `main`. Before the history cutover, the previous refs are captured in a time-limited GitHub Actions bundle for emergency recovery; legacy Jules, Copilot, Palette, Sentinel, Bolt, auth and worker branches are not part of the public release graph.
 
-- locked Node 22 installation;
-- zero high or critical dependency findings;
-- repository one-edition and local-only invariants;
-- complete PR whitespace comparison;
-- ESLint and TypeScript;
-- static Next.js export and exact artefact assertions;
-- Chromium tests against the built static product;
-- a queue larger than the former free limit;
-- Auto-pilot, OxiPNG and AVIF/fallback compression paths;
-- all codec, format and quality controls available without entitlement;
-- no external application requests, account cookies or application-owned browser identity storage;
-- no account, checkout, subscription or paid feature surface.
+## Release and rollback
 
-## Release state
-
-The open-source browser-only implementation is on `main`. DNS and the Pages source setting have been moved to GitHub Pages. Commit `fec63e13946528f0d74e53ecb1ad06944c2cda1c` corrected the deployment to custom-domain root paths. This progress update deliberately triggers a fresh `main` workflow after the Pages source switch.
-
-## Rollback
-
-Revert merge commit `82ec4d7d85186314a9807b3b721d6fa43dc0bc9d` to restore the previous Free/Pro application and Cloudflare control plane. That rollback would intentionally restore the removed remote architecture and is not recommended.
+Every push to `main` runs the complete validation suite and deploys the exact static artifact through GitHub Pages. Normal rollback means restoring a known-good release tree and recreating a single clean root commit; the retired account, payment and remote-worker architecture must not be restored.
 
 ## Next highest-value action
 
-Confirm the fresh `Validate and deploy open local edition` run completes with both `Validate browser application` and `Publish GitHub Pages` green, then verify the public domain shows “Serious image compression” and “No account. No paywall.”
+Keep the compression matrix green as codecs, browsers and dependencies change. Do not add a format or privacy claim without executable evidence.

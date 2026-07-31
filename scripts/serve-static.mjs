@@ -24,9 +24,9 @@ const contentTypes = new Map([
   [".xml", "application/xml; charset=utf-8"],
 ]);
 
+// GitHub Pages does not add custom COOP/COEP headers. Keep the validation
+// server aligned with production so codec selection is tested honestly.
 const securityHeaders = {
-  "Cross-Origin-Embedder-Policy": "require-corp",
-  "Cross-Origin-Opener-Policy": "same-origin",
   "Cross-Origin-Resource-Policy": "same-origin",
   "Referrer-Policy": "no-referrer",
   "X-Content-Type-Options": "nosniff",

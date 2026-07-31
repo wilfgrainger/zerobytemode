@@ -55,6 +55,8 @@ self.onmessage = async (event: MessageEvent) => {
       }
     }
 
+    let engineUsed = selectedEngine;
+
     console.log(
       `[ZeroByteMode] Engine: ${selectedEngine} | Quality: ${Math.round(normalizedQuality * 100)}% | Input: ${file.type} (${file.size} bytes)`,
     );
@@ -74,6 +76,7 @@ self.onmessage = async (event: MessageEvent) => {
         blob = new Blob([buffer], { type: "image/jpeg" });
       } catch (error) {
         console.warn("[ZeroByteMode] MozJPEG failed; using browser JPEG encoder", error);
+        engineUsed = "browser-jpeg-fallback";
         blob = await browserEncode(file, "image/jpeg", normalizedQuality);
       }
     } else if (selectedEngine === "oxipng") {
@@ -86,20 +89,16 @@ self.onmessage = async (event: MessageEvent) => {
         blob = new Blob([buffer], { type: "image/png" });
       } catch (error) {
         console.warn("[ZeroByteMode] OxiPNG failed; using browser PNG encoder", error);
+        engineUsed = "browser-png-fallback";
         blob = await browserEncode(file, "image/png", normalizedQuality);
       }
     } else if (selectedEngine === "avif") {
       try {
-        const [avifEncodeModule, imageData] = await Promise.all([
-          import("@jsquash/avif/encode").then(async (module) => {
-            await module.init({
-              locateFile: (path: string) => path.replace("avif_enc_mt.wasm", "avif_enc.wasm"),
-            } as unknown as Parameters<typeof module.init>[0]);
-            return module;
-          }),
+        const [{ default: encode }, imageData] = await Promise.all([
+          import("@jsquash/avif/encode"),
           getImageData(file),
         ]);
-        const buffer = await avifEncodeModule.default(imageData, {
+        const buffer = await encode(imageData, {
           quality: Math.round(normalizedQuality * 100),
           speed: 6,
         });
@@ -114,8 +113,10 @@ self.onmessage = async (event: MessageEvent) => {
           const buffer = await encode(imageData, {
             quality: Math.round(normalizedQuality * 100),
           });
+          engineUsed = "webp-fallback";
           blob = new Blob([buffer], { type: "image/webp" });
         } catch {
+          engineUsed = "browser-webp-fallback";
           blob = await browserEncode(file, "image/webp", normalizedQuality);
         }
       }
@@ -131,20 +132,23 @@ self.onmessage = async (event: MessageEvent) => {
         blob = new Blob([buffer], { type: "image/webp" });
       } catch (error) {
         console.warn("[ZeroByteMode] WebP failed; using browser WebP encoder", error);
+        engineUsed = "browser-webp-fallback";
         blob = await browserEncode(file, "image/webp", normalizedQuality);
       }
     } else {
       const mimeType = type || file.type || "image/jpeg";
+      engineUsed = "browser";
       blob = await browserEncode(file, mimeType, normalizedQuality);
     }
 
     if (blob.size >= file.size && blob.type === file.type) {
       console.log("[ZeroByteMode] Original file is smaller; retaining it");
+      engineUsed = "original-retained";
       blob = file;
     }
 
     console.log(
-      `[ZeroByteMode] Complete: ${file.size} → ${blob.size} bytes | Format: ${blob.type}`,
+      `[ZeroByteMode] Complete: ${file.size} → ${blob.size} bytes | Format: ${blob.type} | Encoder: ${engineUsed}`,
     );
 
     self.postMessage({
@@ -152,7 +156,7 @@ self.onmessage = async (event: MessageEvent) => {
       blob,
       size: blob.size,
       id,
-      engineUsed: selectedEngine,
+      engineUsed,
     });
   } catch (error) {
     self.postMessage({
