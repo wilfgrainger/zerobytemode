@@ -1,6 +1,6 @@
 # ZeroByteMode progress
 
-Updated: 30 July 2026
+Updated: 31 July 2026
 
 ## Mission
 
@@ -27,15 +27,15 @@ The release:
 
 GitHub Pages is the native host. Cloudflare, Wrangler and the former application Worker are not part of the release architecture.
 
-The permanent workflow now:
+The repository Pages source was changed to **GitHub Actions** on 31 July 2026. The workflow now:
 
 1. validates the root-domain static export and browser application;
-2. builds a second Pages artefact for `/zerobytemode/`;
-3. verifies the Pages asset, logo and manifest paths;
+2. builds the custom-domain artefact with no repository sub-path;
+3. verifies root asset, logo, manifest and `CNAME` paths;
 4. uploads `out/` with the official Pages artefact action;
 5. deploys through the `github-pages` environment.
 
-The Pages workflow is ready in code. Repository Settings → Pages must use **Source: GitHub Actions**. The current **Deploy from a branch / main** setting cannot compile the Next.js source tree. Custom-domain and redirect configuration are deliberately deferred.
+The custom-domain release is configured for `https://zerobytemode.com` and the generated static artefact contains `CNAME` with `zerobytemode.com`.
 
 ## Team decision
 
@@ -65,7 +65,7 @@ Exact final PR head `28b2bb8e0c813c1ce33c64bcd048ac84cd761c11` passed permanent 
 
 ## Release state
 
-The open-source browser-only implementation is on `main`. The default GitHub Pages URL is the intended interim public origin. Publication is pending only the Pages Source setting being changed from branch deployment to GitHub Actions.
+The open-source browser-only implementation is on `main`. DNS and the Pages source setting have been moved to GitHub Pages. Commit `fec63e13946528f0d74e53ecb1ad06944c2cda1c` corrected the deployment to custom-domain root paths. This progress update deliberately triggers a fresh `main` workflow after the Pages source switch.
 
 ## Rollback
 
@@ -73,4 +73,4 @@ Revert merge commit `82ec4d7d85186314a9807b3b721d6fa43dc0bc9d` to restore the pr
 
 ## Next highest-value action
 
-Change Repository Settings → Pages → Build and deployment → Source to **GitHub Actions**, then inspect the resulting `Publish GitHub Pages` job and the default Pages URL. Configure the custom domain and redirect separately later.
+Confirm the fresh `Validate and deploy open local edition` run completes with both `Validate browser application` and `Publish GitHub Pages` green, then verify the public domain shows “Serious image compression” and “No account. No paywall.”
