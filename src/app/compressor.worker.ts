@@ -94,16 +94,11 @@ self.onmessage = async (event: MessageEvent) => {
       }
     } else if (selectedEngine === "avif") {
       try {
-        const [avifEncodeModule, imageData] = await Promise.all([
-          import("@jsquash/avif/encode").then(async (module) => {
-            await module.init({
-              locateFile: (path: string) => path.replace("avif_enc_mt.wasm", "avif_enc.wasm"),
-            } as unknown as Parameters<typeof module.init>[0]);
-            return module;
-          }),
+        const [{ default: encode }, imageData] = await Promise.all([
+          import("@jsquash/avif/encode"),
           getImageData(file),
         ]);
-        const buffer = await avifEncodeModule.default(imageData, {
+        const buffer = await encode(imageData, {
           quality: Math.round(normalizedQuality * 100),
           speed: 6,
         });
