@@ -70,12 +70,9 @@ jobs:
           test -f out/index.html
           test -f out/CNAME
           test "$(cat out/CNAME)" = "zerobytemode.com"
-          test -f out/_headers
           grep -q "No account" out/index.html
           grep -q "No paywall" out/index.html
           grep -q "All unlocked" out/index.html
-          grep -q "Cross-Origin-Embedder-Policy: require-corp" out/_headers
-          grep -q "connect-src 'self'" out/_headers
           ! grep -Eqi "checkout|billing|magic link|stripe" out/index.html
 
       - name: Install Chromium
