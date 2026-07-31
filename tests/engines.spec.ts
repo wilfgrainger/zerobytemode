@@ -16,7 +16,19 @@ type WorkerResult = {
   size?: number;
   engineUsed?: string;
   blobType?: string;
+  blobBytes?: number[];
   error?: string;
+};
+
+type DownloadRecord = {
+  href: string;
+  download: string;
+};
+
+type TrackedWindow = typeof window & {
+  __zbmWorkerResults: WorkerResult[];
+  __zbmCreatedBlobs: Map<string, Blob>;
+  __zbmDownloads: DownloadRecord[];
 };
 
 type CompressionResult = {
@@ -40,33 +52,53 @@ type CompressionOptions = {
 
 async function openTrackedApp(page: Page) {
   await page.addInitScript(() => {
+    const trackedWindow = window as TrackedWindow;
     const NativeWorker = window.Worker;
-    const results: WorkerResult[] = [];
+    const workerResults: WorkerResult[] = [];
+    const createdBlobs = new Map<string, Blob>();
+    const downloads: DownloadRecord[] = [];
 
-    Object.defineProperty(window, "__zbmWorkerResults", {
-      value: results,
-      configurable: false,
-      writable: false,
+    Object.defineProperties(window, {
+      __zbmWorkerResults: { value: workerResults },
+      __zbmCreatedBlobs: { value: createdBlobs },
+      __zbmDownloads: { value: downloads },
     });
+
+    const nativeCreateObjectURL = URL.createObjectURL.bind(URL);
+    URL.createObjectURL = ((object: Blob | MediaSource) => {
+      const url = nativeCreateObjectURL(object);
+      if (object instanceof Blob) createdBlobs.set(url, object);
+      return url;
+    }) as typeof URL.createObjectURL;
+
+    const nativeAnchorClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function trackedClick() {
+      downloads.push({ href: this.href, download: this.download });
+      nativeAnchorClick.call(this);
+    };
 
     class TrackingWorker extends NativeWorker {
       constructor(scriptURL: string | URL, options?: WorkerOptions) {
         super(scriptURL, options);
-        this.addEventListener("message", (event: MessageEvent) => {
+        this.addEventListener("message", async (event: MessageEvent) => {
           const data = event.data;
           if (!data || data.type === "log") return;
-          results.push({
+
+          workerResults.push({
             success: data.success,
             size: data.size,
             engineUsed: data.engineUsed,
             blobType: data.blob?.type,
+            blobBytes: data.blob
+              ? Array.from(new Uint8Array(await data.blob.arrayBuffer()))
+              : undefined,
             error: data.error,
           });
         });
       }
     }
 
-    window.Worker = TrackingWorker as typeof Worker;
+    trackedWindow.Worker = TrackingWorker as typeof Worker;
   });
 
   await page.goto("/");
@@ -164,12 +196,7 @@ async function compressFixture(
   await page.getByRole("slider").fill(String(options.quality ?? 82));
 
   const resultCountBefore = await page.evaluate(
-    () =>
-      (
-        window as typeof window & {
-          __zbmWorkerResults: WorkerResult[];
-        }
-      ).__zbmWorkerResults.length,
+    () => (window as TrackedWindow).__zbmWorkerResults.length,
   );
 
   await page.locator('input[type="file"]').setInputFiles({
@@ -186,56 +213,46 @@ async function compressFixture(
 
   await expect
     .poll(
-      () =>
-        page.evaluate(
-          () =>
-            (
-              window as typeof window & {
-                __zbmWorkerResults: WorkerResult[];
-              }
-            ).__zbmWorkerResults.length,
-        ),
+      () => page.evaluate(() => (window as TrackedWindow).__zbmWorkerResults.length),
       { timeout: 10_000 },
     )
     .toBeGreaterThan(resultCountBefore);
 
   const workerResult = await page.evaluate(
-    () =>
-      (
-        window as typeof window & {
-          __zbmWorkerResults: WorkerResult[];
-        }
-      ).__zbmWorkerResults.at(-1),
+    () => (window as TrackedWindow).__zbmWorkerResults.at(-1),
   );
   expect(workerResult?.success, workerResult?.error).toBe(true);
+  if (!workerResult?.blobType || !workerResult.blobBytes) {
+    throw new Error(`Worker returned no output bytes for ${fixture.name}`);
+  }
+  expect(workerResult.size).toBe(workerResult.blobBytes.length);
 
-  const source = await preview.locator("img").getAttribute("src");
-  if (!source) throw new Error(`No output preview URL for ${fixture.name}`);
+  const output = await page.evaluate(
+    async ({ bytes, type }) => {
+      const byteArray = Uint8Array.from(bytes);
+      const blob = new Blob([byteArray], { type });
+      const bitmap = await createImageBitmap(blob);
+      const dimensions = { width: bitmap.width, height: bitmap.height };
+      bitmap.close();
 
-  const output = await page.evaluate(async (url) => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const bytes = new Uint8Array(await blob.arrayBuffer());
-    const bitmap = await createImageBitmap(blob);
-    const dimensions = { width: bitmap.width, height: bitmap.height };
-    bitmap.close();
-
-    return {
-      outputType: blob.type,
-      outputSize: blob.size,
-      width: dimensions.width,
-      height: dimensions.height,
-      head: Array.from(bytes.slice(0, 64)),
-      bytes: Array.from(bytes),
-    };
-  }, source);
+      return {
+        outputType: blob.type,
+        outputSize: blob.size,
+        width: dimensions.width,
+        height: dimensions.height,
+        head: Array.from(byteArray.slice(0, 64)),
+        bytes: Array.from(byteArray),
+      };
+    },
+    { bytes: workerResult.blobBytes, type: workerResult.blobType },
+  );
 
   const result: CompressionResult = {
     inputName: fixture.name,
     inputType: fixture.mimeType,
     inputSize: fixture.buffer.length,
     ...output,
-    engineUsed: workerResult?.engineUsed,
+    engineUsed: workerResult.engineUsed,
   };
 
   console.log(
@@ -466,16 +483,32 @@ test.describe("local compression engine and format matrix", () => {
     }
     await expect(page.getByText("3 of 3 complete")).toBeVisible();
 
-    const downloadPromise = page.waitForEvent("download");
+    const downloadCountBefore = await page.evaluate(
+      () => (window as TrackedWindow).__zbmDownloads.length,
+    );
     await page.getByRole("button", { name: "Download ZIP", exact: true }).click();
-    const download = await downloadPromise;
-    const stream = await download.createReadStream();
-    if (!stream) throw new Error("ZIP download stream unavailable");
-    const chunks: Buffer[] = [];
-    for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+    await expect
+      .poll(() => page.evaluate(() => (window as TrackedWindow).__zbmDownloads.length))
+      .toBeGreaterThan(downloadCountBefore);
+
+    const zipDownload = await page.evaluate(async () => {
+      const trackedWindow = window as TrackedWindow;
+      const download = trackedWindow.__zbmDownloads.at(-1);
+      if (!download) throw new Error("No download was prepared");
+      const blob = trackedWindow.__zbmCreatedBlobs.get(download.href);
+      if (!blob) throw new Error(`No captured Blob for ${download.href}`);
+      return {
+        filename: download.download,
+        type: blob.type,
+        bytes: Array.from(new Uint8Array(await blob.arrayBuffer())),
+      };
+    });
+
+    expect(zipDownload.filename).toBe("zerobytemode-images.zip");
+    expect(zipDownload.type).toBe("application/zip");
 
     const JSZip = (await import("jszip")).default;
-    const archive = await JSZip.loadAsync(Buffer.concat(chunks));
+    const archive = await JSZip.loadAsync(Buffer.from(zipDownload.bytes));
     expect(Object.keys(archive.files).sort()).toEqual(
       ["batch-image.png", "batch-modern.webp", "batch-photo.jpg"].sort(),
     );
