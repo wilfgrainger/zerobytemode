@@ -9,18 +9,29 @@ const requiredFiles = [
   "src/app/page.tsx",
   "src/app/compressor.worker.ts",
   "docs/ARCHITECTURE.md",
+  "public/CNAME",
+  "package-lock.json",
 ];
 
 const removedFiles = [
+  ".Jules",
+  ".jules",
+  ".agents",
+  ".cursorrules",
+  ".spec",
+  "tasks",
   "src/app/verify/page.tsx",
   "src/lib/constants.ts",
   "src/lib/cookies.ts",
   "src/app/components/SignInModal.tsx",
   "src/app/components/UpgradeEmailModal.tsx",
   "src/app/components/SupportModal.tsx",
-  "worker/index.js",
-  "worker/schema.sql",
-  "worker/wrangler.toml",
+  "worker",
+  "wrangler.toml",
+  "pnpm-lock.yaml",
+  "build.log",
+  "CNAME",
+  "public/_headers",
   "public/sw.js",
 ];
 
@@ -40,7 +51,7 @@ for (const path of requiredFiles) {
 }
 
 for (const path of removedFiles) {
-  if (await exists(path)) failures.push(`Removed architecture returned: ${path}`);
+  if (await exists(path)) failures.push(`Legacy release residue returned: ${path}`);
 }
 
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
@@ -62,6 +73,8 @@ for (const dependency of [
 const sourceFiles = [
   "src/app/page.tsx",
   "src/app/layout.tsx",
+  "src/app/robots.ts",
+  "src/app/sitemap.ts",
   "src/app/compressor.worker.ts",
   "public/manifest.json",
   "package.json",
@@ -77,6 +90,9 @@ for (const [label, pattern] of [
   ["remote email service", /resend\.com|RESEND_API_KEY/i],
   ["analytics", /googletagmanager|google-analytics|gtag\(/i],
   ["subscription Worker", /zerobytemode-subscriptions|NEXT_PUBLIC_WORKER_URL/i],
+  ["stale www canonical origin", /https:\/\/www\.zerobytemode\.com/i],
+  ["unsupported frame-ancestors meta claim", /frame-ancestors/i],
+  ["missing social preview asset", /opengraph-image\.png/i],
 ]) {
   if (pattern.test(source)) failures.push(`Forbidden ${label} found in shipped source`);
 }
@@ -92,8 +108,14 @@ for (const marker of [
 }
 
 const layout = await readFile("src/app/layout.tsx", "utf8");
-if (!layout.includes("connect-src 'self'")) failures.push("CSP must keep application connections same-origin");
+if (!layout.includes("connect-src 'self' blob:")) {
+  failures.push("CSP must permit only same-origin and local Blob connections");
+}
 if (!layout.includes("form-action 'none'")) failures.push("CSP must block form submission");
+if (!layout.includes("object-src 'none'")) failures.push("CSP must block embedded objects");
+
+const cname = (await readFile("public/CNAME", "utf8")).trim();
+if (cname !== "zerobytemode.com") failures.push("public/CNAME must contain zerobytemode.com");
 
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
