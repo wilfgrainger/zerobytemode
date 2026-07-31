@@ -46,8 +46,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git diff --check "${{ github.event.pull_request.base.sha }}...HEAD"
-          else
+          elif git rev-parse --verify HEAD^ >/dev/null 2>&1; then
             git diff --check HEAD^
+          else
+            git diff-tree --check --root --no-commit-id -r HEAD
           fi
 
       - name: Lint
