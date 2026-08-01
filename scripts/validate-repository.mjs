@@ -11,6 +11,7 @@ const requiredFiles = [
   "docs/ARCHITECTURE.md",
   "public/CNAME",
   "package-lock.json",
+  "wrangler.jsonc",
 ];
 
 const removedFiles = [
@@ -116,6 +117,17 @@ if (!layout.includes("object-src 'none'")) failures.push("CSP must block embedde
 
 const cname = (await readFile("public/CNAME", "utf8")).trim();
 if (cname !== "zerobytemode.com") failures.push("public/CNAME must contain zerobytemode.com");
+
+const wrangler = JSON.parse(await readFile("wrangler.jsonc", "utf8"));
+if (wrangler.name !== "zerobytemode") {
+  failures.push("wrangler.jsonc name must match the Cloudflare Worker name");
+}
+if (wrangler.assets?.directory !== "./out") {
+  failures.push("wrangler.jsonc must deploy the static Next.js output from ./out");
+}
+if (wrangler.assets?.not_found_handling !== "404-page") {
+  failures.push("wrangler.jsonc must preserve the generated static 404 page");
+}
 
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
