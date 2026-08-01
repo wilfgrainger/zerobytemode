@@ -1,6 +1,12 @@
 # ZeroByteMode progress
 
-Updated: 31 July 2026
+Updated: 1 August 2026
+
+## Current release
+
+- Mobile-first visual redesign is present on `main` at commit `8f5e722`.
+- The previous direct API commit did not start a deployment run, so this release is being merged through a pull request to create a normal GitHub push event and refresh GitHub Pages.
+- Expected live markers after deployment: `Private by design`, `Local session`, `Compress images`, and the dark `ZB` brand mark.
 
 ## Mission
 
@@ -58,12 +64,12 @@ Additional evidence:
 
 ## Repository history
 
-The public release is maintained as one parentless commit on `main`. Before the history cutover, the previous refs are captured in a time-limited GitHub Actions bundle for emergency recovery; legacy Jules, Copilot, Palette, Sentinel, Bolt, auth and worker branches are not part of the public release graph.
+The public release began as one parentless commit on `main`. Subsequent product updates are kept small, reviewable and release-focused; legacy Jules, Copilot, Palette, Sentinel, Bolt, auth and worker branches are not part of the public release graph.
 
 ## Release and rollback
 
-Every push to `main` runs the complete validation suite and deploys the exact static artifact through GitHub Pages. Normal rollback means restoring a known-good release tree and recreating a single clean root commit; the retired account, payment and remote-worker architecture must not be restored.
+Every normal push to `main` runs the complete validation suite and deploys the exact static artifact through GitHub Pages. Normal rollback means restoring a known-good release tree; the retired account, payment and remote-worker architecture must not be restored.
 
 ## Next highest-value action
 
-Keep the compression matrix green as codecs, browsers and dependencies change. Do not add a format or privacy claim without executable evidence.
+Confirm the redesigned mobile page is served from `zerobytemode.com`, then keep the compression matrix green as codecs, browsers and dependencies change.
