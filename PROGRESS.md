@@ -5,10 +5,9 @@ Updated: 1 August 2026
 ## Current release
 
 - The mobile-first redesign is present on `main` from commit `8f5e722`.
-- `zerobytemode.com` is served by a connected Cloudflare Worker, not directly from the GitHub Pages artifact.
-- The original direct API commit did not trigger Cloudflare's Git deployment. A normal pull-request event exposed the real deployment fault: the repository cleanup had removed the Wrangler configuration while the Cloudflare Worker still expected `npx wrangler deploy`.
-- `wrangler.jsonc` now deploys the generated `out/` directory as Cloudflare Workers Static Assets.
-- Expected live markers after a successful production deployment: `Private by design`, `Local session`, `Compress images`, and the dark `ZB` brand mark.
+- The production site is a static GitHub Pages deployment at `https://zerobytemode.com`.
+- Cloudflare Worker deployment configuration has been removed from the repository.
+- Expected live markers: `Private by design`, `Local session`, `Compress images`, and the dark `ZB` brand mark.
 
 ## Mission
 
@@ -16,13 +15,14 @@ ZeroByteMode is one complete open-source image compressor that runs locally in t
 
 ## Product boundary
 
-- Static Next.js export served at `https://zerobytemode.com` through Cloudflare Workers Static Assets.
-- GitHub Actions validates the exact same `out/` artifact and retains GitHub Pages as a fallback deployment path.
-- JPEG, PNG, WebP and AVIF processing in a browser Web Worker.
-- MozJPEG, OxiPNG, libwebp and libavif WebAssembly codecs, plus browser-native encoding.
+- Static Next.js export hosted by GitHub Pages at `https://zerobytemode.com`.
+- GitHub Actions validates and deploys the exact generated `out/` artifact.
+- JPEG, PNG, WebP and AVIF processing runs in a browser Web Worker.
+- MozJPEG, OxiPNG, libwebp and libavif WebAssembly codecs are available alongside browser-native encoding.
 - Batch queues, quality controls, previews, individual downloads and ZIP export are available to everyone.
 - Image content, filenames and generated files are not sent to an application service.
-- `out/` is the deployable application unit; `wrangler.jsonc` is the Cloudflare deployment source of truth.
+- `public/CNAME` is the custom-domain source and `out/` is the deployable application unit.
+- No Worker runtime, Wrangler configuration, backend, API or remote processing service is part of the product.
 
 ## Compression validation
 
@@ -53,27 +53,27 @@ Additional evidence:
 - Removed a broken manual AVIF WASM path override that silently caused WebP fallback while the interface reported libavif.
 - Report the encoder that actually produced each file, including fallbacks and original-file retention.
 - Allowed local `blob:` reads in the CSP so ZIP generation can read completed in-memory outputs.
-- Removed unsupported response-header claims and aligned browser tests with the real static hosting boundary.
+- Removed unsupported response-header claims and aligned browser tests with static hosting.
 - Made CI whitespace validation work for a parentless root commit.
-- Restored an explicit Cloudflare Workers Static Assets configuration after the repository cleanup removed the old deployment files.
+- Removed Cloudflare Worker deployment configuration so hosting matches the agreed GitHub Pages-only architecture.
 
 ## Team decision
 
-- **Jared:** release only after the complete user journey and evidence matrix pass.
-- **Richard:** codec claims must identify the encoder and the emitted MIME signature, not merely a successful button click.
-- **Dinesh:** validate real dimensions, quality behaviour, mixed batches, ZIP contents and corrupt inputs in Chromium.
-- **Gilfoyle:** production hosting and repository deployment configuration must describe the same system.
-- **Jian-Yang:** a successful source commit is not a release when the connected production builder cannot deploy it.
-- **Cave Pony:** one static artifact, one minimal Wrangler file and no runtime Worker code.
+- **Jared:** one clear product and one clear hosting path.
+- **Richard:** static hosting must not be confused with remote image processing; all image work remains in-browser.
+- **Dinesh:** validate the complete experience against the generated GitHub Pages artifact.
+- **Gilfoyle:** no Worker runtime, backend secret or duplicate deployment system.
+- **Jian-Yang:** a second host adds operational ambiguity without improving the product.
+- **Cave Pony:** GitHub Pages, one static artifact, done.
 
 ## Repository history
 
-The public release began as one parentless commit on `main`. Subsequent product updates are kept small, reviewable and release-focused; legacy Jules, Copilot, Palette, Sentinel, Bolt, auth and remote-worker branches are not part of the public product architecture.
+The public release began as one parentless commit on `main`. Subsequent product updates are small, reviewable and release-focused; legacy Jules, Copilot, Palette, Sentinel, Bolt, auth and remote-worker branches are not part of the public product architecture.
 
 ## Release and rollback
 
-Production changes are merged into `main` through ordinary pull requests. Cloudflare Workers Builds runs `npm run build` and deploys `out/` using `wrangler.jsonc`; GitHub Actions independently validates the same artifact. Normal rollback means restoring a known-good tree and redeploying it. The retired account, payment and remote-processing architecture must not be restored.
+Every push to `main` runs the complete validation suite and deploys the exact static artifact through GitHub Pages. Normal rollback means restoring a known-good tree and redeploying it. The retired account, payment, Cloudflare Worker and remote-processing architecture must not be restored.
 
 ## Next highest-value action
 
-Confirm the corrected Cloudflare deployment completes and verify the redesigned mobile page at `zerobytemode.com`, then keep the compression matrix green as codecs, browsers and dependencies change.
+Point `zerobytemode.com` exclusively at GitHub Pages, remove any remaining Cloudflare Worker custom-domain route in the Cloudflare dashboard, then verify the redesigned page and compression journey on the live domain.
