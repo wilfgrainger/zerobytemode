@@ -11,7 +11,6 @@ const requiredFiles = [
   "docs/ARCHITECTURE.md",
   "public/CNAME",
   "package-lock.json",
-  "wrangler.jsonc",
 ];
 
 const removedFiles = [
@@ -29,6 +28,7 @@ const removedFiles = [
   "src/app/components/SupportModal.tsx",
   "worker",
   "wrangler.toml",
+  "wrangler.jsonc",
   "pnpm-lock.yaml",
   "build.log",
   "CNAME",
@@ -91,6 +91,7 @@ for (const [label, pattern] of [
   ["remote email service", /resend\.com|RESEND_API_KEY/i],
   ["analytics", /googletagmanager|google-analytics|gtag\(/i],
   ["subscription Worker", /zerobytemode-subscriptions|NEXT_PUBLIC_WORKER_URL/i],
+  ["Cloudflare deployment", /wrangler|workers\.dev|cloudflare/i],
   ["stale www canonical origin", /https:\/\/www\.zerobytemode\.com/i],
   ["unsupported frame-ancestors meta claim", /frame-ancestors/i],
   ["missing social preview asset", /opengraph-image\.png/i],
@@ -118,20 +119,9 @@ if (!layout.includes("object-src 'none'")) failures.push("CSP must block embedde
 const cname = (await readFile("public/CNAME", "utf8")).trim();
 if (cname !== "zerobytemode.com") failures.push("public/CNAME must contain zerobytemode.com");
 
-const wrangler = JSON.parse(await readFile("wrangler.jsonc", "utf8"));
-if (wrangler.name !== "zerobytemode") {
-  failures.push("wrangler.jsonc name must match the Cloudflare Worker name");
-}
-if (wrangler.assets?.directory !== "./out") {
-  failures.push("wrangler.jsonc must deploy the static Next.js output from ./out");
-}
-if (wrangler.assets?.not_found_handling !== "404-page") {
-  failures.push("wrangler.jsonc must preserve the generated static 404 page");
-}
-
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
   process.exit(1);
 }
 
-console.log("Repository matches the one-edition, local-only architecture.");
+console.log("Repository matches the one-edition, local-only GitHub Pages architecture.");
