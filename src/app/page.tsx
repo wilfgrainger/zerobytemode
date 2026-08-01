@@ -102,6 +102,28 @@ const makeId = () =>
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4">
+      <path
+        d="M12 3.25 19 6v5.2c0 4.15-2.62 7.95-7 9.55-4.38-1.6-7-5.4-7-9.55V6l7-2.75Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="m9 12 2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-4 w-4">
+      <path d="m8.5 7-5 5 5 5M15.5 7l5 5-5 5M14 4l-4 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const [items, setItems] = useState<ImageItem[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -306,10 +328,7 @@ export default function Home() {
 
     for (const item of ready) {
       const blob = await fetch(item.outputUrl).then((response) => response.blob());
-      archive.file(
-        `${baseName(item.file.name)}.${outputExtension(item.outputType)}`,
-        blob,
-      );
+      archive.file(`${baseName(item.file.name)}.${outputExtension(item.outputType)}`, blob);
     }
 
     const blob = await archive.generateAsync({ type: "blob" });
@@ -322,22 +341,21 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen overflow-hidden bg-slate-50 text-slate-950">
-      <div className="pointer-events-none fixed inset-0 -z-0">
-        <div className="absolute -left-40 -top-48 h-[34rem] w-[34rem] rounded-full bg-fuchsia-300/35 blur-3xl" />
-        <div className="absolute -right-48 top-20 h-[38rem] w-[38rem] rounded-full bg-cyan-300/30 blur-3xl" />
-        <div className="absolute bottom-[-18rem] left-1/4 h-[36rem] w-[36rem] rounded-full bg-violet-300/25 blur-3xl" />
+    <main className="min-h-screen overflow-hidden bg-[#f7f7f4] text-slate-950">
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute left-1/2 top-[-22rem] h-[44rem] w-[44rem] -translate-x-1/2 rounded-full bg-violet-200/55 blur-3xl" />
+        <div className="absolute right-[-24rem] top-72 h-[42rem] w-[42rem] rounded-full bg-cyan-100/70 blur-3xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-16 pt-6 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between gap-5">
-          <a href="#compressor" className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/80 bg-white/70 shadow-sm backdrop-blur">
-              <Image src="/logo.svg" alt="" width={34} height={34} priority />
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:px-10">
+        <header className="flex min-h-20 items-center justify-between gap-4 border-b border-slate-900/10">
+          <a href="#compressor" className="group flex min-w-0 items-center gap-3" aria-label="ZeroByteMode compressor">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-950 text-[11px] font-black tracking-[-0.08em] text-white shadow-sm transition group-hover:-translate-y-0.5">
+              ZB
             </span>
-            <span>
-              <span className="block text-base font-black tracking-tight">ZeroByteMode</span>
-              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            <span className="min-w-0">
+              <span className="block truncate text-[15px] font-black tracking-[-0.025em]">ZeroByteMode</span>
+              <span className="block truncate text-[9px] font-bold uppercase tracking-[0.22em] text-slate-500">
                 Open source · local only
               </span>
             </span>
@@ -347,69 +365,134 @@ export default function Home() {
             href="https://github.com/wilfgrainger/zerobytemode"
             target="_blank"
             rel="noreferrer"
-            className="rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white transition hover:bg-violet-700"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-900/10 bg-white/75 px-3.5 py-2.5 text-xs font-black shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-slate-900/25 hover:bg-white"
           >
-            View source
+            <CodeIcon />
+            <span>View source</span>
           </a>
         </header>
 
-        <section className="grid gap-10 pb-12 pt-16 lg:grid-cols-[1.08fr_0.92fr] lg:items-end lg:pt-24">
+        <section className="grid gap-12 pb-10 pt-14 sm:pt-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-16 lg:pb-16 lg:pt-24">
           <div>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-1.5 text-xs font-bold text-emerald-800">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <p className="inline-flex items-center gap-2 rounded-full border border-emerald-700/15 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800 shadow-sm">
+              <ShieldIcon />
               Images never leave your device
             </p>
-            <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.94] tracking-[-0.055em] sm:text-6xl lg:text-7xl">
+
+            <h1 className="mt-7 max-w-4xl text-[3.45rem] font-black leading-[0.91] tracking-[-0.065em] sm:text-7xl lg:text-[5.25rem]">
               Serious image compression.
-              <span className="block bg-gradient-to-r from-violet-700 via-fuchsia-600 to-orange-500 bg-clip-text text-transparent">
-                No account. No paywall.
-              </span>
+              <span className="mt-2 block text-violet-700">Private by design.</span>
             </h1>
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600">
-              Batch-compress JPEG, PNG, WebP and AVIF with open WASM codecs in your
-              browser. All controls, engines and ZIP downloads are available to everyone.
+
+            <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl sm:leading-9">
+              Batch-compress JPEG, PNG, WebP and AVIF in your browser with open codecs and full controls.
+            </p>
+
+            <p className="mt-5 text-xl font-black tracking-[-0.025em] text-slate-950 sm:text-2xl">
+              No account. No paywall.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="#compressor"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-slate-950 px-6 py-3 text-sm font-black text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-violet-700"
+              >
+                Compress images
+              </a>
+              <a
+                href="#how-it-works"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-900/15 bg-white/65 px-6 py-3 text-sm font-black backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
+              >
+                See how it works
+              </a>
+            </div>
+
+            <p className="mt-5 text-xs leading-5 text-slate-500">
+              Nothing to install. Your queue disappears when this tab closes.
             </p>
           </div>
 
-          <dl className="grid grid-cols-2 overflow-hidden rounded-3xl border border-white/80 bg-white/60 shadow-xl shadow-slate-900/5 backdrop-blur-xl">
-            {[
-              ["Uploads", "None"],
-              ["Accounts", "None"],
-              ["Paid tier", "None"],
-              ["Licence", "Open source"],
-            ].map(([term, detail]) => (
-              <div key={term} className="border-b border-r border-slate-200/70 p-5 last:border-b-0">
-                <dt className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                  {term}
-                </dt>
-                <dd className="mt-2 text-xl font-black tracking-tight">{detail}</dd>
+          <div className="relative lg:pl-4">
+            <div className="absolute -inset-5 -z-10 rounded-[2.5rem] bg-gradient-to-br from-violet-300/45 via-transparent to-cyan-200/55 blur-2xl" />
+            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 text-white shadow-2xl shadow-slate-950/20">
+              <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  Local session
+                </div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">No network path</span>
               </div>
-            ))}
-          </dl>
+
+              <div className="p-5 sm:p-7">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">The whole journey</p>
+                <div className="mt-5 grid gap-3">
+                  {[
+                    ["01", "Choose", "Read from your device"],
+                    ["02", "Compress", "Process inside a Web Worker"],
+                    ["03", "Download", "Save the result or a ZIP"],
+                  ].map(([number, title, detail]) => (
+                    <div key={number} className="grid grid-cols-[2.5rem_1fr] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-3.5">
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 font-mono text-[11px] font-bold text-violet-200">{number}</span>
+                      <span>
+                        <span className="block text-sm font-black">{title}</span>
+                        <span className="mt-0.5 block text-xs leading-5 text-slate-400">{detail}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {["MozJPEG", "OxiPNG", "libwebp", "libavif"].map((codec) => (
+                    <span key={codec} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-[10px] text-slate-300">
+                      {codec}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
+
+        <dl className="grid grid-cols-2 overflow-hidden rounded-2xl border border-slate-900/10 bg-white/70 shadow-sm backdrop-blur sm:grid-cols-4">
+          {[
+            ["Uploads", "None"],
+            ["Accounts", "None"],
+            ["Paid tier", "None"],
+            ["Licence", "Open source"],
+          ].map(([term, detail], index) => (
+            <div key={term} className={`p-4 sm:p-5 ${index % 2 === 0 ? "border-r border-slate-900/10" : ""} ${index < 2 ? "border-b border-slate-900/10 sm:border-b-0" : ""} ${index > 0 ? "sm:border-l sm:border-slate-900/10" : ""}`}>
+              <dt className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">{term}</dt>
+              <dd className="mt-1.5 text-lg font-black tracking-[-0.025em]">{detail}</dd>
+            </div>
+          ))}
+        </dl>
 
         <section
           id="compressor"
-          className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/70 shadow-2xl shadow-slate-900/10 backdrop-blur-2xl"
+          className="mt-16 scroll-mt-6 overflow-hidden rounded-[2rem] border border-slate-900/10 bg-white shadow-2xl shadow-slate-950/10 sm:mt-24"
         >
-          <div className="grid gap-px bg-slate-200/70 lg:grid-cols-[0.72fr_1.28fr]">
-            <aside className="bg-white/80 p-6 sm:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-violet-700">
-                    Output
-                  </p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight">Compression settings</h2>
-                </div>
-                <span className="rounded-full bg-violet-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-violet-700">
-                  All unlocked
-                </span>
+          <div className="flex flex-col gap-3 bg-slate-950 px-5 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">Local compressor</p>
+              <h2 className="mt-1 text-xl font-black tracking-[-0.025em]">Turn large images into useful files</h2>
+            </div>
+            <span className="w-fit rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white">
+              All unlocked
+            </span>
+          </div>
+
+          <div className="grid lg:grid-cols-[0.72fr_1.28fr]">
+            <aside className="border-b border-slate-900/10 bg-[#fafaf8] p-5 sm:p-8 lg:border-b-0 lg:border-r">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-700">Output</p>
+                <h3 className="mt-2 text-2xl font-black tracking-[-0.035em]">Compression settings</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-500">Choose the balance you need, or leave Auto-pilot to decide.</p>
               </div>
 
-              <label className="mt-8 block">
-                <span className="flex items-center justify-between text-sm font-bold">
+              <label className="mt-8 block rounded-2xl border border-slate-900/10 bg-white p-4">
+                <span className="flex items-center justify-between text-sm font-black">
                   Quality
-                  <output className="font-mono text-violet-700">{quality}%</output>
+                  <output className="rounded-lg bg-violet-50 px-2 py-1 font-mono text-xs text-violet-700">{quality}%</output>
                 </span>
                 <input
                   type="range"
@@ -419,17 +502,15 @@ export default function Home() {
                   onChange={(event) => setQuality(Number(event.target.value))}
                   className="mt-4 w-full accent-violet-700"
                 />
-                <span className="mt-2 block text-xs leading-5 text-slate-500">
-                  Lower values create smaller files. PNG optimisation remains lossless.
-                </span>
+                <span className="mt-2 block text-xs leading-5 text-slate-500">Lower values create smaller files. PNG optimisation stays lossless.</span>
               </label>
 
-              <label className="mt-7 block text-sm font-bold">
+              <label className="mt-4 block text-sm font-black">
                 Format
                 <select
                   value={format}
                   onChange={(event) => setFormat(event.target.value as OutputFormat)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-violet-500 transition focus:ring-2"
+                  className="mt-2 w-full rounded-xl border border-slate-900/10 bg-white px-4 py-3.5 text-sm font-semibold outline-none ring-violet-500 transition focus:ring-2"
                 >
                   {FORMAT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -439,28 +520,26 @@ export default function Home() {
                 </select>
               </label>
 
-              <label className="mt-5 block text-sm font-bold">
+              <label className="mt-4 block text-sm font-black">
                 Engine
                 <select
                   value={engine}
                   onChange={(event) => setEngine(event.target.value as CompressionEngine)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-violet-500 transition focus:ring-2"
+                  className="mt-2 w-full rounded-xl border border-slate-900/10 bg-white px-4 py-3.5 text-sm font-semibold outline-none ring-violet-500 transition focus:ring-2"
                 >
                   {ENGINE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </label>
 
-              <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-900">
-                Processing happens in a Web Worker on this device. The app has no
-                image-upload endpoint, login system or analytics tracker.
+              <div className="mt-6 flex gap-3 rounded-2xl border border-emerald-700/15 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
+                <span className="mt-1 text-emerald-700"><ShieldIcon /></span>
+                <p>Processing happens on this device. There is no image-upload endpoint, login system or analytics tracker.</p>
               </div>
             </aside>
 
-            <div className="bg-slate-50/70 p-5 sm:p-8">
+            <div className="bg-white p-5 sm:p-8">
               <div
                 onDragOver={(event) => {
                   event.preventDefault();
@@ -471,10 +550,10 @@ export default function Home() {
                   setDragging(false);
                 }}
                 onDrop={onDrop}
-                className={`flex min-h-64 flex-col items-center justify-center rounded-[1.75rem] border-2 border-dashed px-6 py-10 text-center transition ${
+                className={`group flex min-h-72 flex-col items-center justify-center rounded-[1.5rem] border px-6 py-10 text-center transition ${
                   dragging
-                    ? "border-violet-600 bg-violet-100/70"
-                    : "border-slate-300 bg-white/70 hover:border-violet-400 hover:bg-white"
+                    ? "border-violet-500 bg-violet-50"
+                    : "border-dashed border-slate-300 bg-[#fafaf8] hover:border-violet-400 hover:bg-violet-50/50"
                 }`}
               >
                 <input
@@ -485,61 +564,36 @@ export default function Home() {
                   onChange={onFileInput}
                   className="sr-only"
                 />
-                <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-950 text-3xl text-white shadow-lg">
-                  +
-                </span>
-                <h2 className="mt-5 text-2xl font-black tracking-tight">
-                  Drop images here
-                </h2>
-                <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-                  Add a single image or a full batch. Your browser memory is the only
-                  practical queue limit.
-                </p>
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-slate-950 text-2xl font-light text-white shadow-lg transition group-hover:-translate-y-1 group-hover:bg-violet-700">+</span>
+                <h2 className="mt-5 text-2xl font-black tracking-[-0.035em]">Drop images here</h2>
+                <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">One image or a full batch. Your browser memory is the only practical queue limit.</p>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-6 rounded-full bg-violet-700 px-6 py-3 text-sm font-black text-white shadow-lg shadow-violet-700/20 transition hover:bg-violet-800"
+                  className="mt-6 min-h-12 rounded-xl bg-violet-700 px-6 py-3 text-sm font-black text-white shadow-lg shadow-violet-700/20 transition hover:-translate-y-0.5 hover:bg-violet-800"
                 >
                   Choose images
                 </button>
+                <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">JPEG · PNG · WebP · AVIF</p>
               </div>
 
               {items.length > 0 && (
                 <div className="mt-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="text-lg font-black tracking-tight">Batch queue</h3>
-                      <p className="text-xs text-slate-500" aria-live="polite">
-                        {completed.length} of {items.length} complete
-                      </p>
+                      <h3 className="text-lg font-black tracking-[-0.025em]">Batch queue</h3>
+                      <p className="text-xs text-slate-500" aria-live="polite">{completed.length} of {items.length} complete</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={clearAll}
-                        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold transition hover:border-slate-400"
-                      >
-                        Clear
-                      </button>
+                      <button type="button" onClick={clearAll} className="rounded-xl border border-slate-900/10 bg-white px-4 py-2.5 text-xs font-black transition hover:border-slate-900/30">Clear</button>
                       {completed.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={downloadAll}
-                          className="rounded-full border border-slate-950 bg-white px-4 py-2 text-xs font-bold transition hover:bg-slate-100"
-                        >
-                          Download ZIP
-                        </button>
+                        <button type="button" onClick={downloadAll} className="rounded-xl border border-slate-950 bg-white px-4 py-2.5 text-xs font-black transition hover:bg-slate-50">Download ZIP</button>
                       )}
                       <button
                         type="button"
                         onClick={startCompression}
-                        disabled={
-                          processing ||
-                          !items.some(
-                            (item) => item.status === "staged" || item.status === "error",
-                          )
-                        }
-                        className="rounded-full bg-slate-950 px-5 py-2 text-xs font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        disabled={processing || !items.some((item) => item.status === "staged" || item.status === "error")}
+                        className="rounded-xl bg-slate-950 px-5 py-2.5 text-xs font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         {processing ? "Compressing…" : "Compress batch"}
                       </button>
@@ -548,70 +602,50 @@ export default function Home() {
 
                   <ul className="mt-4 space-y-3">
                     {items.map((item) => {
-                      const saving =
-                        item.outputSize && item.file.size
-                          ? Math.round((1 - item.outputSize / item.file.size) * 100)
-                          : null;
+                      const saving = item.outputSize && item.file.size
+                        ? Math.round((1 - item.outputSize / item.file.size) * 100)
+                        : null;
 
                       return (
-                        <li
-                          key={item.id}
-                          className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-3 sm:grid-cols-[56px_1fr_auto] sm:items-center"
-                        >
+                        <li key={item.id} className="grid gap-4 rounded-2xl border border-slate-900/10 bg-white p-3 sm:grid-cols-[56px_1fr_auto] sm:items-center">
                           <button
                             type="button"
                             onClick={() => setSelectedId(item.id)}
                             className="relative h-14 w-14 overflow-hidden rounded-xl bg-slate-100"
                             aria-label={`Preview ${item.file.name}`}
                           >
-                            <Image
-                              src={item.outputUrl || item.originalUrl}
-                              alt=""
-                              fill
-                              unoptimized
-                              className="object-cover"
-                            />
+                            <Image src={item.outputUrl || item.originalUrl} alt="" fill unoptimized className="object-cover" />
                           </button>
 
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-bold">{item.file.name}</p>
+                            <p className="truncate text-sm font-black">{item.file.name}</p>
                             <p className="mt-1 text-xs text-slate-500">
                               {formatBytes(item.file.size)}
                               {item.outputSize ? ` → ${formatBytes(item.outputSize)}` : ""}
                               {saving !== null ? ` · ${saving}% smaller` : ""}
                             </p>
-                            {item.error && (
-                              <p className="mt-1 text-xs font-semibold text-red-700">{item.error}</p>
-                            )}
+                            {item.error && <p className="mt-1 text-xs font-bold text-red-700">{item.error}</p>}
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider ${
-                                item.status === "done"
-                                  ? "bg-emerald-100 text-emerald-800"
-                                  : item.status === "error"
-                                    ? "bg-red-100 text-red-800"
-                                    : item.status === "processing"
-                                      ? "bg-violet-100 text-violet-800"
-                                      : "bg-slate-100 text-slate-600"
-                              }`}
-                            >
+                            <span className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-[0.12em] ${
+                              item.status === "done"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : item.status === "error"
+                                  ? "bg-red-100 text-red-800"
+                                  : item.status === "processing"
+                                    ? "bg-violet-100 text-violet-800"
+                                    : "bg-slate-100 text-slate-600"
+                            }`}>
                               {item.status}
                             </span>
                             {item.status === "done" && (
-                              <button
-                                type="button"
-                                onClick={() => downloadItem(item)}
-                                className="rounded-full bg-slate-950 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-white"
-                              >
-                                Download
-                              </button>
+                              <button type="button" onClick={() => downloadItem(item)} className="rounded-lg bg-slate-950 px-3 py-2 text-[9px] font-black uppercase tracking-[0.12em] text-white">Download</button>
                             )}
                             <button
                               type="button"
                               onClick={() => removeItem(item.id)}
-                              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-red-700"
+                              className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-700"
                               aria-label={`Remove ${item.file.name}`}
                             >
                               ×
@@ -626,82 +660,60 @@ export default function Home() {
             </div>
           </div>
 
-          <dl className="grid grid-cols-2 border-t border-slate-200 bg-slate-950 text-white sm:grid-cols-4">
-            {summary.map((item) => (
-              <div key={item.label} className="border-r border-white/10 p-5">
-                <dt className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                  {item.label}
-                </dt>
-                <dd className="mt-2 text-xl font-black">{item.value}</dd>
+          <dl className="grid grid-cols-2 border-t border-slate-900/10 bg-[#fafaf8] sm:grid-cols-4">
+            {summary.map((item, index) => (
+              <div key={item.label} className={`p-5 ${index % 2 === 0 ? "border-r border-slate-900/10" : ""} ${index < 2 ? "border-b border-slate-900/10 sm:border-b-0" : ""} ${index > 0 ? "sm:border-l sm:border-slate-900/10" : ""}`}>
+                <dt className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">{item.label}</dt>
+                <dd className="mt-1.5 text-xl font-black tracking-[-0.025em]">{item.value}</dd>
               </div>
             ))}
           </dl>
 
           {completed.length > 0 && (
-            <div className="flex flex-col gap-3 border-t border-slate-200 bg-emerald-50 px-6 py-5 text-sm text-emerald-950 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-emerald-700/15 bg-emerald-50 px-6 py-5 text-sm text-emerald-950 sm:flex-row sm:items-center sm:justify-between">
               <p>
                 <strong>{completed.length} file{completed.length === 1 ? "" : "s"}</strong>{" "}
-                ready locally
-                {Number.isFinite(totalSaving) ? ` · ${totalSaving}% total reduction` : ""}.
+                ready locally{Number.isFinite(totalSaving) ? ` · ${totalSaving}% total reduction` : ""}.
               </p>
-              <button type="button" onClick={downloadAll} className="font-black underline underline-offset-4">
-                Download completed files as ZIP
-              </button>
+              <button type="button" onClick={downloadAll} className="text-left font-black underline underline-offset-4">Download completed files as ZIP</button>
             </div>
           )}
         </section>
 
-        <section className="grid gap-5 py-14 md:grid-cols-3">
-          {[
-            [
-              "Open codecs",
-              "MozJPEG, OxiPNG, libwebp and libavif run through WebAssembly in your browser.",
-            ],
-            [
-              "No artificial limits",
-              "Batch processing, codec controls, quality settings and ZIP export are part of the one open edition.",
-            ],
-            [
-              "Auditable privacy",
-              "There is no account database, payment provider, analytics script or image-upload service to trust.",
-            ],
-          ].map(([title, description]) => (
-            <article
-              key={title}
-              className="rounded-3xl border border-white/80 bg-white/60 p-6 shadow-lg shadow-slate-900/5 backdrop-blur"
-            >
-              <h2 className="text-lg font-black tracking-tight">{title}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p>
-            </article>
-          ))}
+        <section id="how-it-works" className="scroll-mt-8 py-16 sm:py-24">
+          <div className="max-w-2xl">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-700">Why it is different</p>
+            <h2 className="mt-3 text-3xl font-black tracking-[-0.045em] sm:text-4xl">A useful tool, not a funnel.</h2>
+            <p className="mt-4 text-base leading-7 text-slate-600">The product is the compressor. There is no registration journey, artificial quota or hidden edition behind it.</p>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {[
+              ["Open codecs", "MozJPEG, OxiPNG, libwebp and libavif run through WebAssembly in your browser."],
+              ["No artificial limits", "Batch processing, quality controls and ZIP export are included in the single open edition."],
+              ["Auditable privacy", "No account database, analytics script or image-upload service is present in the application."],
+            ].map(([title, description], index) => (
+              <article key={title} className="rounded-2xl border border-slate-900/10 bg-white/70 p-6 shadow-sm backdrop-blur">
+                <span className="font-mono text-[10px] font-bold text-violet-700">0{index + 1}</span>
+                <h3 className="mt-6 text-lg font-black tracking-[-0.025em]">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
-        <footer className="flex flex-col gap-4 border-t border-slate-200 py-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="flex flex-col gap-5 border-t border-slate-900/10 py-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <p>ZeroByteMode processes images locally. Source available under the repository licence.</p>
           <div className="flex gap-5">
-            <a
-              href="https://github.com/wilfgrainger/zerobytemode"
-              target="_blank"
-              rel="noreferrer"
-              className="font-bold text-slate-700 hover:text-violet-700"
-            >
-              GitHub
-            </a>
-            <a
-              href="https://github.com/wilfgrainger/zerobytemode/blob/main/PRIVACY.md"
-              target="_blank"
-              rel="noreferrer"
-              className="font-bold text-slate-700 hover:text-violet-700"
-            >
-              Privacy
-            </a>
+            <a href="https://github.com/wilfgrainger/zerobytemode" target="_blank" rel="noreferrer" className="font-black text-slate-700 hover:text-violet-700">GitHub</a>
+            <a href="https://github.com/wilfgrainger/zerobytemode/blob/main/PRIVACY.md" target="_blank" rel="noreferrer" className="font-black text-slate-700 hover:text-violet-700">Privacy</a>
           </div>
         </footer>
       </div>
 
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur"
           role="dialog"
           aria-modal="true"
           aria-label={`Preview ${selected.file.name}`}
@@ -710,44 +722,24 @@ export default function Home() {
           }}
         >
           <div className="w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-              <div>
-                <p className="text-sm font-black">{selected.file.name}</p>
+            <div className="flex items-center justify-between border-b border-slate-900/10 px-5 py-4">
+              <div className="min-w-0 pr-4">
+                <p className="truncate text-sm font-black">{selected.file.name}</p>
                 <p className="text-xs text-slate-500">
                   Original {formatBytes(selected.file.size)}
                   {selected.outputSize ? ` · Output ${formatBytes(selected.outputSize)}` : ""}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedId(null)}
-                className="rounded-full bg-slate-100 px-4 py-2 text-sm font-black"
-              >
-                Close
-              </button>
+              <button type="button" onClick={() => setSelectedId(null)} className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-black">Close</button>
             </div>
             <div className="grid min-h-[60vh] gap-px bg-slate-200 md:grid-cols-2">
               <figure className="relative bg-slate-100">
-                <Image
-                  src={selected.originalUrl}
-                  alt={`Original ${selected.file.name}`}
-                  fill
-                  unoptimized
-                  className="object-contain p-4"
-                />
-                <figcaption className="absolute left-4 top-4 rounded-full bg-slate-950/85 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">
-                  Original
-                </figcaption>
+                <Image src={selected.originalUrl} alt={`Original ${selected.file.name}`} fill unoptimized className="object-contain p-4" />
+                <figcaption className="absolute left-4 top-4 rounded-full bg-slate-950/85 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-white">Original</figcaption>
               </figure>
               <figure className="relative bg-slate-100">
-                <Image
-                  src={selected.outputUrl || selected.originalUrl}
-                  alt={`Compressed ${selected.file.name}`}
-                  fill
-                  unoptimized
-                  className="object-contain p-4"
-                />
-                <figcaption className="absolute left-4 top-4 rounded-full bg-violet-700/90 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">
+                <Image src={selected.outputUrl || selected.originalUrl} alt={`Compressed ${selected.file.name}`} fill unoptimized className="object-contain p-4" />
+                <figcaption className="absolute left-4 top-4 rounded-full bg-violet-700/90 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-white">
                   {selected.outputUrl ? "Compressed" : "Awaiting compression"}
                 </figcaption>
               </figure>
