@@ -96,9 +96,7 @@ jobs:
   pages:
     name: Publish GitHub Pages
     needs: validate
-    if: >-
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'pull_request' && github.head_ref == 'release/force-github-pages')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
