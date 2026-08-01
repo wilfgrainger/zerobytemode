@@ -4,9 +4,11 @@ Updated: 1 August 2026
 
 ## Current release
 
-- Mobile-first visual redesign is present on `main` at commit `8f5e722`.
-- The previous direct API commit did not start a deployment run, so this release is being merged through a pull request to create a normal GitHub push event and refresh GitHub Pages.
-- Expected live markers after deployment: `Private by design`, `Local session`, `Compress images`, and the dark `ZB` brand mark.
+- The mobile-first redesign is present on `main` from commit `8f5e722`.
+- `zerobytemode.com` is served by a connected Cloudflare Worker, not directly from the GitHub Pages artifact.
+- The original direct API commit did not trigger Cloudflare's Git deployment. A normal pull-request event exposed the real deployment fault: the repository cleanup had removed the Wrangler configuration while the Cloudflare Worker still expected `npx wrangler deploy`.
+- `wrangler.jsonc` now deploys the generated `out/` directory as Cloudflare Workers Static Assets.
+- Expected live markers after a successful production deployment: `Private by design`, `Local session`, `Compress images`, and the dark `ZB` brand mark.
 
 ## Mission
 
@@ -14,12 +16,13 @@ ZeroByteMode is one complete open-source image compressor that runs locally in t
 
 ## Product boundary
 
-- Static Next.js export hosted by GitHub Pages at `https://zerobytemode.com`.
+- Static Next.js export served at `https://zerobytemode.com` through Cloudflare Workers Static Assets.
+- GitHub Actions validates the exact same `out/` artifact and retains GitHub Pages as a fallback deployment path.
 - JPEG, PNG, WebP and AVIF processing in a browser Web Worker.
 - MozJPEG, OxiPNG, libwebp and libavif WebAssembly codecs, plus browser-native encoding.
 - Batch queues, quality controls, previews, individual downloads and ZIP export are available to everyone.
 - Image content, filenames and generated files are not sent to an application service.
-- `public/CNAME` is the single custom-domain source; `out/` is the deployable application unit.
+- `out/` is the deployable application unit; `wrangler.jsonc` is the Cloudflare deployment source of truth.
 
 ## Compression validation
 
@@ -50,26 +53,27 @@ Additional evidence:
 - Removed a broken manual AVIF WASM path override that silently caused WebP fallback while the interface reported libavif.
 - Report the encoder that actually produced each file, including fallbacks and original-file retention.
 - Allowed local `blob:` reads in the CSP so ZIP generation can read completed in-memory outputs.
-- Removed the unsupported `_headers` configuration and aligned the local validation server with GitHub Pages rather than pretending custom COOP/COEP headers exist in production.
+- Removed unsupported response-header claims and aligned browser tests with the real static hosting boundary.
 - Made CI whitespace validation work for a parentless root commit.
+- Restored an explicit Cloudflare Workers Static Assets configuration after the repository cleanup removed the old deployment files.
 
 ## Team decision
 
 - **Jared:** release only after the complete user journey and evidence matrix pass.
 - **Richard:** codec claims must identify the encoder and the emitted MIME signature, not merely a successful button click.
 - **Dinesh:** validate real dimensions, quality behaviour, mixed batches, ZIP contents and corrupt inputs in Chromium.
-- **Gilfoyle:** test the same isolation and hosting constraints GitHub Pages actually provides.
-- **Jian-Yang:** a WebP fallback is not an AVIF success; fallback reporting must be explicit.
-- **Cave Pony:** one verified product tree, one domain source and no dead hosting machinery.
+- **Gilfoyle:** production hosting and repository deployment configuration must describe the same system.
+- **Jian-Yang:** a successful source commit is not a release when the connected production builder cannot deploy it.
+- **Cave Pony:** one static artifact, one minimal Wrangler file and no runtime Worker code.
 
 ## Repository history
 
-The public release began as one parentless commit on `main`. Subsequent product updates are kept small, reviewable and release-focused; legacy Jules, Copilot, Palette, Sentinel, Bolt, auth and worker branches are not part of the public release graph.
+The public release began as one parentless commit on `main`. Subsequent product updates are kept small, reviewable and release-focused; legacy Jules, Copilot, Palette, Sentinel, Bolt, auth and remote-worker branches are not part of the public product architecture.
 
 ## Release and rollback
 
-Every normal push to `main` runs the complete validation suite and deploys the exact static artifact through GitHub Pages. Normal rollback means restoring a known-good release tree; the retired account, payment and remote-worker architecture must not be restored.
+Production changes are merged into `main` through ordinary pull requests. Cloudflare Workers Builds runs `npm run build` and deploys `out/` using `wrangler.jsonc`; GitHub Actions independently validates the same artifact. Normal rollback means restoring a known-good tree and redeploying it. The retired account, payment and remote-processing architecture must not be restored.
 
 ## Next highest-value action
 
-Confirm the redesigned mobile page is served from `zerobytemode.com`, then keep the compression matrix green as codecs, browsers and dependencies change.
+Confirm the corrected Cloudflare deployment completes and verify the redesigned mobile page at `zerobytemode.com`, then keep the compression matrix green as codecs, browsers and dependencies change.
