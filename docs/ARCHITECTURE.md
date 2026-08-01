@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-ZeroByteMode is a static browser application. Its product boundary is the generated `out/` directory, deployed to GitHub Pages.
+ZeroByteMode is a static browser application. Its deployable product boundary is the generated `out/` directory. The live custom domain is served as Cloudflare Workers Static Assets; GitHub Pages remains a separately validated fallback artifact.
 
 There is no application server, account service, payment service, analytics service, database or image-upload endpoint.
 
@@ -35,7 +35,7 @@ The worker returns a `Blob`. The main thread creates an in-memory object URL for
 
 Queue, settings and output URLs live only in React memory. The application does not write account cookies, local storage, session storage or IndexedDB. Reloading the page clears the current work.
 
-GitHub Pages receives normal requests for HTML, JavaScript, CSS, images and WASM assets. It does not receive the user's selected image files.
+Cloudflare receives normal requests for the static HTML, JavaScript, CSS, images and WASM assets. It does not receive the user's selected image files.
 
 ## Browser security controls
 
@@ -47,12 +47,14 @@ The document CSP:
 - permits the WebAssembly execution required by the codecs;
 - contains no analytics, email, payment or application-service origins.
 
-GitHub Pages controls HTTP response headers. The application does not claim custom response-header protections that Pages cannot configure. Browser tests fail if account, checkout or external application requests return.
+The production deployment contains no Worker runtime script: Cloudflare serves only the files from `out/`. Browser tests fail if account, checkout or external application requests return.
 
 ## Deployment
 
-`npm run build` creates `out/`. GitHub Actions validates that exact artifact, uploads it with the official Pages artifact action and deploys it through the `github-pages` environment. `public/CNAME` supplies the custom domain in the generated artifact.
+`npm run build` creates `out/`. Cloudflare Workers Builds runs the build and then deploys that directory through `wrangler.jsonc` using Workers Static Assets. The Wrangler project name must remain `zerobytemode` so it matches the connected Worker.
+
+GitHub Actions independently validates the same static output with dependency audit, repository invariants, lint, TypeScript, browser tests and codec tests. It also publishes a GitHub Pages fallback artifact. `public/CNAME` is retained for that fallback and domain recovery path.
 
 ## Release history and recovery
 
-The public repository is maintained as one parentless release commit on `main`. Before a history rewrite, the complete prior Git graph is exported to a time-limited Git bundle artifact. Recovery means restoring the required tree from that bundle, rerunning the release gate and publishing a new single root commit. There is no database migration, secret rotation or secondary application service to coordinate.
+Production changes are merged into `main` through ordinary pull requests so both GitHub validation and Cloudflare's Git integration receive normal repository events. Recovery means restoring a known-good tree, rerunning the release gate and redeploying the same `out/` artifact. There is no database migration, secret rotation or secondary application service to coordinate.
