@@ -104,7 +104,7 @@ jobs:
       pages: write
       id-token: write
     environment:
-      name: github-pages
+      name: pages-production
       url: ${{ steps.deployment.outputs.page_url }}
     concurrency:
       group: github-pages
