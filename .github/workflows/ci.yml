@@ -58,6 +58,19 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
+      - name: Prepare release provenance
+        shell: bash
+        run: |
+          echo "NEXT_PUBLIC_RELEASE_COMMIT=${GITHUB_SHA}" >> "${GITHUB_ENV}"
+          echo "NEXT_PUBLIC_RELEASE_RUN=${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
+          echo "NEXT_PUBLIC_RELEASE_RUN_ID=${GITHUB_RUN_ID}" >> "${GITHUB_ENV}"
+          echo "NEXT_PUBLIC_RELEASE_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "${GITHUB_ENV}"
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            echo "NEXT_PUBLIC_RELEASE_CHANNEL=production" >> "${GITHUB_ENV}"
+          else
+            echo "NEXT_PUBLIC_RELEASE_CHANNEL=validation" >> "${GITHUB_ENV}"
+          fi
+
       - name: Build static application
         run: npm run build
         env:
@@ -68,11 +81,16 @@ jobs:
         shell: bash
         run: |
           test -f out/index.html
+          test -f out/release.json
           test -f out/CNAME
           test "$(cat out/CNAME)" = "zerobytemode.com"
           grep -q "No account" out/index.html
           grep -q "No paywall" out/index.html
           grep -q "All unlocked" out/index.html
+          grep -q "Release provenance" out/index.html
+          grep -q "\"commit\":\"${GITHUB_SHA}\"" out/release.json
+          grep -q "\"runNumber\":\"${GITHUB_RUN_NUMBER}\"" out/release.json
+          grep -q '"imageUploads":false' out/release.json
           ! grep -Eqi "checkout|billing|magic link|stripe" out/index.html
 
       - name: Install Chromium
@@ -126,6 +144,15 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Prepare release provenance
+        shell: bash
+        run: |
+          echo "NEXT_PUBLIC_RELEASE_COMMIT=${GITHUB_SHA}" >> "${GITHUB_ENV}"
+          echo "NEXT_PUBLIC_RELEASE_RUN=${GITHUB_RUN_NUMBER}" >> "${GITHUB_ENV}"
+          echo "NEXT_PUBLIC_RELEASE_RUN_ID=${GITHUB_RUN_ID}" >> "${GITHUB_ENV}"
+          echo "NEXT_PUBLIC_RELEASE_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "${GITHUB_ENV}"
+          echo "NEXT_PUBLIC_RELEASE_CHANNEL=production" >> "${GITHUB_ENV}"
+
       - name: Build custom-domain release
         run: npm run build
         env:
@@ -136,6 +163,7 @@ jobs:
         shell: bash
         run: |
           test -f out/index.html
+          test -f out/release.json
           test -f out/CNAME
           test "$(cat out/CNAME)" = "zerobytemode.com"
           grep -q '/_next/' out/index.html
@@ -144,6 +172,11 @@ jobs:
           ! grep -Eq '(href|src)="/zerobytemode/' out/index.html
           grep -q "No account" out/index.html
           grep -q "No paywall" out/index.html
+          grep -q "Release provenance" out/index.html
+          grep -q '"status":"deployed"' out/release.json
+          grep -q "\"commit\":\"${GITHUB_SHA}\"" out/release.json
+          grep -q "\"runNumber\":\"${GITHUB_RUN_NUMBER}\"" out/release.json
+          grep -q '"imageUploads":false' out/release.json
           ! grep -Eqi "checkout|billing|magic link|stripe" out/index.html
 
       - name: Upload GitHub Pages artifact
