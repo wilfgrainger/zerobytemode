@@ -37,7 +37,7 @@ test.describe("ZeroByteMode open local edition", () => {
     for (const number of [1, 2, 3, 4]) {
       await expect(page.getByText(`image-${number}.png`)).toBeVisible();
     }
-    await expect(page.getByText("0 of 4 complete")).toBeVisible();
+    await expect(page.getByText("0 of 4 ready")).toBeVisible();
   });
 
   test("makes every codec and output control available", async ({ page }) => {
@@ -56,6 +56,49 @@ test.describe("ZeroByteMode open local edition", () => {
       "Browser native",
     ]);
     await expect(page.getByRole("slider")).toBeEnabled();
+  });
+
+  test("keeps fixed codecs and output formats coherent", async ({ page }) => {
+    const format = page.getByRole("combobox").nth(0);
+    const engine = page.getByRole("combobox").nth(1);
+
+    await engine.selectOption("mozjpeg");
+    await expect(format).toHaveValue("image/jpeg");
+
+    await format.selectOption("image/png");
+    await expect(engine).toHaveValue("autopilot");
+  });
+
+  test("rejects unsupported image types with a clear local message", async ({ page }) => {
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "vector.svg",
+      mimeType: "image/svg+xml",
+      buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+    });
+
+    await expect(page.getByText(/Skipped unsupported file: vector\.svg/)).toBeVisible();
+    await expect(page.getByText("Batch queue")).toHaveCount(0);
+  });
+
+  test("preview dialog traps focus and restores it when closed", async ({ page }) => {
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "preview.png",
+      mimeType: "image/png",
+      buffer: PNG,
+    });
+
+    const preview = page.getByRole("button", { name: "Preview preview.png" });
+    await preview.focus();
+    await preview.click();
+
+    const dialog = page.getByRole("dialog");
+    const close = dialog.getByRole("button", { name: "Close" });
+    await expect(dialog).toBeVisible();
+    await expect(close).toBeFocused();
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(preview).toBeFocused();
   });
 
   test("does not make external application requests or write identity state", async ({ page, context }) => {
