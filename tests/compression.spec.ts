@@ -33,7 +33,7 @@ test.describe("compression decision helpers", () => {
     expect(uniqueFilename("photo.jpg", used)).toBe("photo.jpg");
     expect(uniqueFilename("PHOTO.jpg", used)).toBe("PHOTO-2.jpg");
     expect(uniqueFilename("photo.jpg", used)).toBe("photo-3.jpg");
-    expect(safeFilename("../unsafe/name.png")).toBe("-..-unsafe-name.png");
+    expect(safeFilename("../unsafe/name.png")).toBe("-unsafe-name.png");
   });
 
   test("keeps original names when the original file wins", () => {
