@@ -837,7 +837,7 @@ export default function Home() {
                     <div>
                       <h3 className="text-lg font-black tracking-[-0.025em]">Batch queue</h3>
                       <p className="text-xs text-slate-500" aria-live="polite">
-                        {completed.length} of {items.length} ready
+                        {completed.length} of {items.length} complete
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
