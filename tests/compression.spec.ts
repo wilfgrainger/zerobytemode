@@ -10,10 +10,12 @@ import {
 } from "../src/lib/compression";
 
 test.describe("compression decision helpers", () => {
-  test("normalises supported MIME types and file extensions", () => {
+  test("normalises supported MIME types and trustworthy file extensions", () => {
     expect(normaliseImageType("image/jpg")).toBe("image/jpeg");
     expect(normaliseImageType("", "holiday.AVIF")).toBe("image/avif");
+    expect(normaliseImageType("application/octet-stream", "photo.png")).toBe("image/png");
     expect(normaliseImageType("image/svg+xml", "vector.svg")).toBeNull();
+    expect(normaliseImageType("image/svg+xml", "disguised.png")).toBeNull();
   });
 
   test("preserves AVIF in auto mode and lets fixed codecs own their format", () => {
