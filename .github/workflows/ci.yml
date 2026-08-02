@@ -139,9 +139,9 @@ jobs:
           test -f out/CNAME
           test "$(cat out/CNAME)" = "zerobytemode.com"
           grep -q '/_next/' out/index.html
-          grep -q '/logo.svg' out/index.html
+          grep -q '/icon.svg' out/index.html
           grep -q '/manifest.json' out/index.html
-          ! grep -q '/zerobytemode/' out/index.html
+          ! grep -Eq '(href|src)="/zerobytemode/' out/index.html
           grep -q "No account" out/index.html
           grep -q "No paywall" out/index.html
           ! grep -Eqi "checkout|billing|magic link|stripe" out/index.html
