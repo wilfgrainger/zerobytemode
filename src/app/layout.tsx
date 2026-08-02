@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ReleaseStatus } from "../components/release-status";
 import "./globals.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -80,7 +81,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ReleaseStatus />
+      </body>
     </html>
   );
 }
