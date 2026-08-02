@@ -46,6 +46,8 @@ const TYPE_BY_EXTENSION: Record<string, SupportedImageType> = {
   webp: "image/webp",
 };
 
+const GENERIC_FILE_TYPES = new Set(["", "application/octet-stream"]);
+
 const FIXED_ENGINE_TYPE: Partial<Record<CompressionEngine, SupportedImageType>> = {
   avif: "image/avif",
   mozjpeg: "image/jpeg",
@@ -68,10 +70,13 @@ const ENGINE_LABELS: Record<string, string> = {
 };
 
 export function normaliseImageType(type: string, filename = ""): SupportedImageType | null {
-  const canonicalType = type.toLowerCase() === "image/jpg" ? "image/jpeg" : type.toLowerCase();
+  const lowerType = type.toLowerCase();
+  const canonicalType = lowerType === "image/jpg" ? "image/jpeg" : lowerType;
   if ((SUPPORTED_IMAGE_TYPES as readonly string[]).includes(canonicalType)) {
     return canonicalType as SupportedImageType;
   }
+
+  if (!GENERIC_FILE_TYPES.has(canonicalType)) return null;
 
   const extension = filename.split(".").pop()?.toLowerCase() ?? "";
   return TYPE_BY_EXTENSION[extension] ?? null;
