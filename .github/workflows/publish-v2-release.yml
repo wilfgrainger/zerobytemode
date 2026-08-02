@@ -1,0 +1,95 @@
+name: Publish v2.0.0 GitHub Release
+
+on:
+  workflow_run:
+    workflows: ["Validate and deploy open local edition"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  release:
+    name: Publish verified v2.0.0 release
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact deployed commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Verify release version
+        shell: bash
+        run: |
+          test "$(node -p "require('./package.json').version")" = "2.0.0"
+
+      - name: Download verified deployment evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_RUN_ID: ${{ github.event.workflow_run.id }}
+        shell: bash
+        run: |
+          gh run download "${RELEASE_RUN_ID}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --name open-local-release-evidence \
+            --dir release-evidence
+          zip -qr zerobytemode-v2.0.0-release-evidence.zip release-evidence
+
+      - name: Publish immutable GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+          RELEASE_RUN_ID: ${{ github.event.workflow_run.id }}
+          TAG: v2.0.0
+        shell: bash
+        run: |
+          if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "${TAG} already exists; leaving the immutable release unchanged."
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            tag_args=(--verify-tag)
+          else
+            tag_args=(--target "${RELEASE_SHA}")
+          fi
+
+          short_sha="${RELEASE_SHA:0:7}"
+          cat > release-notes.md <<EOF
+          ## ZeroByteMode v2.0.0
+
+          The first formal open-source release of the local-only image compressor.
+
+          ### Highlights
+
+          - JPEG, PNG, WebP and AVIF compression entirely inside the browser
+          - MozJPEG, OxiPNG, libwebp and libavif WebAssembly codecs
+          - no image uploads, accounts, analytics, quotas or paywall
+          - reliable batch settings, honest encoder and size reporting, safe ZIP names and worker recovery
+          - keyboard-accessible previews and narrow-mobile support
+          - visible deployment provenance plus a machine-readable "/release.json" manifest
+
+          ### Verified release
+
+          - Deployed commit: [\`${short_sha}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${RELEASE_SHA})
+          - Validation and Pages deployment: [workflow run](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${RELEASE_RUN_ID})
+          - Test gate: 27 browser, codec, release-provenance and security tests
+          - Production site: https://zerobytemode.com
+
+          The attached evidence archive contains the exact static output, Playwright report and desktop/mobile screenshots from the successful deployment workflow.
+          EOF
+
+          gh release create "${TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            "${tag_args[@]}" \
+            --title "ZeroByteMode v2.0.0" \
+            --notes-file release-notes.md \
+            "zerobytemode-v2.0.0-release-evidence.zip#Verified deployment evidence"
