@@ -37,7 +37,7 @@ test.describe("ZeroByteMode open local edition", () => {
     for (const number of [1, 2, 3, 4]) {
       await expect(page.getByText(`image-${number}.png`)).toBeVisible();
     }
-    await expect(page.getByText("0 of 4 ready")).toBeVisible();
+    await expect(page.getByText("0 of 4 complete")).toBeVisible();
   });
 
   test("makes every codec and output control available", async ({ page }) => {
