@@ -73,7 +73,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' blob:; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'"
+          content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self' data:; worker-src 'self' blob:; manifest-src 'self'"
         />
         <script
           type="application/ld+json"

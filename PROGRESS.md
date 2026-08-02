@@ -1,13 +1,13 @@
 # ZeroByteMode progress
 
-Updated: 1 August 2026
+Updated: 2 August 2026
 
 ## Current release
 
-- The mobile-first redesign is present on `main` from commit `8f5e722`.
 - The production site is a static GitHub Pages deployment at `https://zerobytemode.com`.
-- Cloudflare Worker deployment configuration has been removed from the repository.
-- Expected live markers: `Private by design`, `Local session`, `Compress images`, and the dark `ZB` brand mark.
+- Cloudflare Worker deployment configuration is not part of the repository or product architecture.
+- `main` remains the deployed release while reliability candidate PR `#58` is independently validated.
+- Expected live markers remain `Private by design`, `Local session`, `Compress images`, and the dark `ZB` brand mark.
 
 ## Mission
 
@@ -24,11 +24,36 @@ ZeroByteMode is one complete open-source image compressor that runs locally in t
 - `public/CNAME` is the custom-domain source and `out/` is the deployable application unit.
 - No Worker runtime, Wrangler configuration, backend, API or remote processing service is part of the product.
 
+## Reliability candidate
+
+PR `#58` hardens the complete local journey without changing the hosting or privacy architecture:
+
+- Explicitly rejects unsupported and MIME-conflicting files instead of silently staging them.
+- Captures output settings when a batch starts so later control changes cannot affect in-flight work.
+- Keeps fixed codecs aligned with their real output format and preserves AVIF in Auto mode.
+- Reports the encoder or fallback that actually produced every result.
+- Reports outputs as smaller, larger or unchanged without negative “savings” wording.
+- Cancels an active batch safely and restarts the local worker without discarding the queue.
+- Creates ZIP files directly from in-memory Blob objects and preserves duplicate names safely.
+- Traps and restores keyboard focus in the visual comparison dialog.
+- Tightens `connect-src` to the application origin while retaining local Blob image previews.
+
 ## Compression validation
 
-Exact release head `30dff51b3a873fdddc4046ac9687b018a114d974` passed workflow run `#37` (`30622835754`) with 17 Chromium tests and evidence artifact `8790145112`.
+Known-good release head `30dff51b3a873fdddc4046ac9687b018a114d974` passed workflow run `#37` (`30622835754`) with 17 Chromium tests and evidence artifact `8790145112`.
 
-Real 320×240 fixture results at quality 82:
+The reliability candidate expands the suite to 25 browser and deterministic decision tests. Its release gate covers:
+
+- locked dependency installation and high-severity audit;
+- repository architecture invariants and whitespace;
+- ESLint, strict TypeScript and static export;
+- real MozJPEG, OxiPNG, libwebp, libavif and browser-native output validation;
+- Auto-pilot format selection and AVIF round-trip compression;
+- quality response, mixed-batch ZIP output and corrupt-input handling;
+- unsupported MIME rejection, fixed codec/format coherence and safe duplicate filenames;
+- narrow mobile layout, keyboard focus management, no external requests, cookies or identity state.
+
+Real 320×240 fixture results at quality 82 remain:
 
 | Path | Input | Output | Reduction | Result |
 | --- | ---: | ---: | ---: | --- |
@@ -38,33 +63,14 @@ Real 320×240 fixture results at quality 82:
 | libavif | 102,534 B PNG | 10,596 B AVIF | 90% | Valid AVIF, dimensions preserved |
 | Browser JPEG | 102,534 B PNG | 15,967 B JPEG | 84% | Valid JPEG, dimensions preserved |
 
-Additional evidence:
-
-- Auto-pilot selected OxiPNG for PNG, MozJPEG for JPEG and browser-native WebP for WebP.
-- AVIF encoded at quality 92, decoded, then recompressed from 13,850 B to 4,944 B at quality 45.
-- MozJPEG quality 35 produced 6,213 B versus 34,555 B at quality 92.
-- Mixed PNG, JPEG and WebP batches completed and produced a valid ZIP with correct filenames.
-- Corrupt image input failed safely without exposing a download.
-- The browser made no external application requests and wrote no identity state.
-- Locked install, dependency audit, repository invariants, whitespace, lint, TypeScript and static export all passed.
-
-## Defects fixed during validation
-
-- Removed a broken manual AVIF WASM path override that silently caused WebP fallback while the interface reported libavif.
-- Report the encoder that actually produced each file, including fallbacks and original-file retention.
-- Allowed local `blob:` reads in the CSP so ZIP generation can read completed in-memory outputs.
-- Removed unsupported response-header claims and aligned browser tests with static hosting.
-- Made CI whitespace validation work for a parentless root commit.
-- Removed Cloudflare Worker deployment configuration so hosting matches the agreed GitHub Pages-only architecture.
-
 ## Team decision
 
-- **Jared:** one clear product and one clear hosting path.
-- **Richard:** static hosting must not be confused with remote image processing; all image work remains in-browser.
-- **Dinesh:** validate the complete experience against the generated GitHub Pages artifact.
-- **Gilfoyle:** no Worker runtime, backend secret or duplicate deployment system.
-- **Jian-Yang:** a second host adds operational ambiguity without improving the product.
-- **Cave Pony:** GitHub Pages, one static artifact, done.
+- **Jared:** improve the real completion path, not decorate an already credible interface.
+- **Richard:** centralise compression decisions so UI and worker contracts cannot drift.
+- **Dinesh:** make every failure, fallback and batch outcome legible to the user.
+- **Gilfoyle:** remove unnecessary Blob network permission and keep all output handling in memory.
+- **Jian-Yang:** reject disguised unsupported files and duplicate ZIP names before they become user data-loss bugs.
+- **Cave Pony:** one local queue, one worker, one honest result path.
 
 ## Repository history
 
@@ -76,4 +82,4 @@ Every push to `main` runs the complete validation suite and deploys the exact st
 
 ## Next highest-value action
 
-Point `zerobytemode.com` exclusively at GitHub Pages, remove any remaining Cloudflare Worker custom-domain route in the Cloudflare dashboard, then verify the redesigned page and compression journey on the live domain.
+Complete the PR `#58` quality gate and independent review. Once explicitly approved, merge it to `main`, allow the existing GitHub Pages workflow to deploy the exact artifact, then verify the live compression journey at `zerobytemode.com`.

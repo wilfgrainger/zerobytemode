@@ -110,8 +110,14 @@ for (const marker of [
 }
 
 const layout = await readFile("src/app/layout.tsx", "utf8");
-if (!layout.includes("connect-src 'self' blob:")) {
-  failures.push("CSP must permit only same-origin and local Blob connections");
+if (!layout.includes("connect-src 'self';")) {
+  failures.push("CSP must limit network connections to the application origin");
+}
+if (/connect-src[^;]*(?:blob:|https?:|wss?:)/i.test(layout)) {
+  failures.push("CSP must not permit Blob or external network connection targets");
+}
+if (!layout.includes("img-src 'self' data: blob:")) {
+  failures.push("CSP must permit local Blob image previews");
 }
 if (!layout.includes("form-action 'none'")) failures.push("CSP must block form submission");
 if (!layout.includes("object-src 'none'")) failures.push("CSP must block embedded objects");

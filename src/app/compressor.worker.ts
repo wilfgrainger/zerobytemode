@@ -1,33 +1,85 @@
 /** ZeroByteMode local compression worker using open @jsquash WASM codecs. */
 
+type SupportedImageType = "image/jpeg" | "image/png" | "image/webp" | "image/avif";
+type CompressionEngine = "browser" | "mozjpeg" | "oxipng" | "webp" | "avif";
+
+interface CompressionMessage {
+  file: File;
+  quality: number;
+  type: SupportedImageType;
+  id: string;
+  engine: CompressionEngine;
+  autoPilot: boolean;
+}
+
+const SUPPORTED_TYPES = new Set<SupportedImageType>([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+]);
+
+function normaliseType(type: string): SupportedImageType | null {
+  const canonical = type === "image/jpg" ? "image/jpeg" : type;
+  return SUPPORTED_TYPES.has(canonical as SupportedImageType)
+    ? (canonical as SupportedImageType)
+    : null;
+}
+
+function selectAutoPilotEngine(
+  inputType: SupportedImageType,
+  outputType: SupportedImageType,
+): CompressionEngine {
+  if (outputType !== inputType) {
+    if (outputType === "image/jpeg") return "mozjpeg";
+    if (outputType === "image/png") return "oxipng";
+    if (outputType === "image/webp") return "webp";
+    return "avif";
+  }
+
+  if (inputType === "image/png") return "oxipng";
+  if (inputType === "image/jpeg") return "mozjpeg";
+  if (inputType === "image/avif") return "avif";
+  return "browser";
+}
+
 async function getImageData(file: File | Blob): Promise<ImageData> {
   const bitmap = await createImageBitmap(file);
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const context = canvas.getContext("2d", { willReadFrequently: true });
-  if (!context) throw new Error("Could not get canvas context");
+  try {
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) throw new Error("Could not get canvas context");
 
-  context.drawImage(bitmap, 0, 0);
-  const imageData = context.getImageData(0, 0, bitmap.width, bitmap.height);
-  bitmap.close();
-  return imageData;
+    context.drawImage(bitmap, 0, 0);
+    return context.getImageData(0, 0, bitmap.width, bitmap.height);
+  } finally {
+    bitmap.close();
+  }
 }
 
 async function browserEncode(
   file: File | Blob,
-  mimeType: string,
+  mimeType: SupportedImageType,
   quality: number,
 ): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Could not get canvas context");
+  try {
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Could not get canvas context");
 
-  context.drawImage(bitmap, 0, 0);
-  bitmap.close();
-  return canvas.convertToBlob({ type: mimeType, quality });
+    context.drawImage(bitmap, 0, 0);
+    const blob = await canvas.convertToBlob({ type: mimeType, quality });
+    if (blob.type !== mimeType) {
+      throw new Error(`This browser cannot encode ${mimeType.replace("image/", "").toUpperCase()}`);
+    }
+    return blob;
+  } finally {
+    bitmap.close();
+  }
 }
 
-self.onmessage = async (event: MessageEvent) => {
+self.onmessage = async (event: MessageEvent<CompressionMessage>) => {
   const { file, quality, type, id, engine, autoPilot } = event.data;
 
   const postLog = (message: string) => {
@@ -35,30 +87,22 @@ self.onmessage = async (event: MessageEvent) => {
   };
 
   try {
+    const inputType = normaliseType(file.type);
+    const outputType = normaliseType(type);
+    if (!inputType) throw new Error("Unsupported input type. Use JPEG, PNG, WebP or AVIF.");
+    if (!outputType) throw new Error("Unsupported output type.");
+
     postLog("Initialising local compression");
     let normalizedQuality = quality > 1 ? quality / 100 : quality;
     normalizedQuality = Math.max(0.01, Math.min(1, normalizedQuality));
 
-    let selectedEngine = engine || "browser";
-
-    if (autoPilot) {
-      if (type && type !== file.type) {
-        if (type === "image/webp") selectedEngine = "webp";
-        else if (type === "image/avif") selectedEngine = "avif";
-        else selectedEngine = "browser";
-      } else if (file.type === "image/png") {
-        selectedEngine = "oxipng";
-      } else if (file.type === "image/jpeg" || file.type === "image/jpg") {
-        selectedEngine = "mozjpeg";
-      } else {
-        selectedEngine = "browser";
-      }
-    }
-
-    let engineUsed = selectedEngine;
+    const selectedEngine = autoPilot
+      ? selectAutoPilotEngine(inputType, outputType)
+      : engine || "browser";
+    let engineUsed: string = selectedEngine;
 
     console.log(
-      `[ZeroByteMode] Engine: ${selectedEngine} | Quality: ${Math.round(normalizedQuality * 100)}% | Input: ${file.type} (${file.size} bytes)`,
+      `[ZeroByteMode] Engine: ${selectedEngine} | Quality: ${Math.round(normalizedQuality * 100)}% | Input: ${inputType} (${file.size} bytes)`,
     );
     postLog(`Engine selected: ${selectedEngine.toUpperCase()}`);
 
@@ -136,12 +180,11 @@ self.onmessage = async (event: MessageEvent) => {
         blob = await browserEncode(file, "image/webp", normalizedQuality);
       }
     } else {
-      const mimeType = type || file.type || "image/jpeg";
       engineUsed = "browser";
-      blob = await browserEncode(file, mimeType, normalizedQuality);
+      blob = await browserEncode(file, outputType, normalizedQuality);
     }
 
-    if (blob.size >= file.size && blob.type === file.type) {
+    if (blob.size >= file.size && blob.type === inputType) {
       console.log("[ZeroByteMode] Original file is smaller; retaining it");
       engineUsed = "original-retained";
       blob = file;
